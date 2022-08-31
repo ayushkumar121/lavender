@@ -2,7 +2,11 @@
     This file contains architectural independent utility functions
 */
 
-int strlen(char *str)
+#ifndef UTILS_H
+#define UTILS_H
+
+
+unsigned long strlen(const char *str)
 {
     int size = 0;
     while (*str++)
@@ -34,3 +38,5 @@ void itoa(int value, char *buf)
 
     strrev(buf);
 }
+
+#endif

@@ -1,3 +1,6 @@
+#ifndef VGA_H
+#define VGA_H
+
 #define ROWS 25
 #define COLS 80
 
@@ -72,3 +75,5 @@ void vga_puts(struct VgaWriter *writer, char *str, char color_code)
         vga_putchar(writer, *str++, color_code);
     }
 }
+
+#endif
