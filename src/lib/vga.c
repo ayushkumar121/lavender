@@ -1,7 +1,6 @@
-#ifndef VGA_H
-#define VGA_H
+#pragma once
 
-#include "types.h"
+#include "utils.c"
 
 #define ROWS 25
 #define COLS 80
@@ -84,5 +83,3 @@ void vga_puts(char *str, char color_code)
         vga_putchar(*str++, color_code);
     }
 }
-
-#endif

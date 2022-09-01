@@ -1,8 +1,6 @@
-#include "types.h"
-
-#include "utils.c"
-#include "vga.c"
-#include "idt.c"
+#include "../lib/utils.c"
+#include "../lib/vga.c"
+#include "../interrupts/idt.c"
 
 void kernel_main()
 {
@@ -12,7 +10,7 @@ void kernel_main()
     // Testing interrupts
     int a = 1 / 0;
     vga_puts( "[OK] ", VGA_COLOR_GREEN);
-    vga_puts( "Interrupts\n", VGA_COLOR_DARK_GREY);
+    vga_puts( "Handling exceptions", VGA_COLOR_DARK_GREY);
 }
 
 extern void _start()
