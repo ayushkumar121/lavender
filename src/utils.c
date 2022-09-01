@@ -5,6 +5,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "types.h"
 
 unsigned long strlen(const char *str)
 {
@@ -37,6 +38,16 @@ void itoa(int value, char *buf)
     }
 
     strrev(buf);
+}
+
+void* memset(void *s, int c, size_t n)
+{
+    unsigned char* buf = (unsigned char*) s;
+    for (size_t i; i<n; ++i) {
+        buf[i] = c;
+    }
+
+    return s;
 }
 
 #endif

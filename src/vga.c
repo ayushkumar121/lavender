@@ -1,6 +1,8 @@
 #ifndef VGA_H
 #define VGA_H
 
+#include "types.h"
+
 #define ROWS 25
 #define COLS 80
 
@@ -24,55 +26,62 @@ enum vga_color
     VGA_COLOR_WHITE = 15,
 };
 
-struct VgaWriter
+typedef struct VgaWriter
 {
     int col;
     int row;
     char *buf;
-};
+    int initialized;
+} VgaWriter;
 
-void vga_init(struct VgaWriter *writer)
+VgaWriter writer;
+
+void vga_init()
 {
-    writer->buf = (char *)0xb8000;
-    writer->col = 0;
-    writer->row = 0;
+    writer.buf = (char *)0xb8000;
+    writer.col = 0;
+    writer.row = 0;
+    writer.initialized = true;
 }
 
-void vga_newline(struct VgaWriter *writer)
+void vga_newline()
 {
-    writer->col = 0;
-    writer->row++;
+    writer.col = 0;
+    writer.row++;
 }
 
-void vga_putchar(struct VgaWriter *writer, char ch, char color_code)
+void vga_putchar(char ch, char color_code)
 {
-    int k = (writer->row * COLS + writer->col) * 2;
+    if(!writer.initialized)
+        return;
+    
+    int k = (writer.row * COLS + writer.col) * 2;
 
     if (ch != '\n')
     {
-        writer->buf[k] = ch;
-        writer->buf[k + 1] = color_code;
+        writer.buf[k] = ch;
+        writer.buf[k + 1] = color_code;
 
-        if (writer->col < COLS)
+        if (writer.col < COLS)
         {
-            writer->col++;
+            writer.col++;
         }
         else
         {
-            vga_newline(writer);
+            vga_newline();
         }
     }
     else
     {
-        vga_newline(writer);
+        vga_newline();
     }
 }
 
-void vga_puts(struct VgaWriter *writer, char *str, char color_code)
+void vga_puts(char *str, char color_code)
 {
     while (*str)
     {
-        vga_putchar(writer, *str++, color_code);
+        vga_putchar(*str++, color_code);
     }
 }
 
