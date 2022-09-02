@@ -30,6 +30,8 @@ typedef struct VgaWriter
     int col;
     int row;
     char *buf;
+    char color;
+    char previous_color;
     int initialized;
 } VgaWriter;
 
@@ -40,6 +42,7 @@ void vga_init()
     writer.buf = (char *)0xb8000;
     writer.col = 0;
     writer.row = 0;
+    writer.color = VGA_COLOR_WHITE;
     writer.initialized = true;
 }
 
@@ -49,7 +52,7 @@ void vga_newline()
     writer.row++;
 }
 
-void vga_putchar(char ch, char color_code)
+void vga_putchar(char ch)
 {
     if(!writer.initialized)
         return;
@@ -59,7 +62,7 @@ void vga_putchar(char ch, char color_code)
     if (ch != '\n')
     {
         writer.buf[k] = ch;
-        writer.buf[k + 1] = color_code;
+        writer.buf[k + 1] = writer.color;
 
         if (writer.col < COLS)
         {
@@ -76,10 +79,24 @@ void vga_putchar(char ch, char color_code)
     }
 }
 
-void vga_puts(char *str, char color_code)
+
+void vga_setcolor(char color_code)
+{
+    writer.previous_color = writer.color;
+    writer.color = color_code;
+}
+
+void vga_restore_color()
+{
+    char temp = writer.color;
+    writer.color = writer.previous_color;
+    writer.previous_color = temp;
+}
+
+void vga_puts(char *str)
 {
     while (*str)
     {
-        vga_putchar(*str++, color_code);
+        vga_putchar(*str++);
     }
 }

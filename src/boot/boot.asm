@@ -99,7 +99,7 @@ start_protected_mode:
 times 510-($-$$) db 0
 dw 0xAA55
 
-; ;; Procedures
+; ;; Real mode Procedures
 ; proc_print_str:
 ;     mov ah, 0x0e ;; Switch to teletype mode
 ; proc_print_str_loop:
