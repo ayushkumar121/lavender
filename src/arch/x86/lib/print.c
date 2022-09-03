@@ -1,9 +1,10 @@
-#pragma once
+#include <lib/print.h>
+#include <lib/types.h>
+#include <lib/utils.h>
+#include <lib/string.h>
+#include <gfx/vga.h>
 
-#include <utils.c>
 #include <stdarg.h>
-
-#include "../gfx/vga.c"
 
 void setcolor(char color)
 {
@@ -53,8 +54,15 @@ __attribute__((format(printf, 1, 2))) void printf(const char *fmt, ...)
                 char c = va_arg(args, int);
                 vga_putchar(c);
             }
-
             break;
+
+            case 's':
+            {
+                char *s = va_arg(args, char *);
+                vga_puts(s);
+            }
+            break;
+
             default:
                 break;
             }

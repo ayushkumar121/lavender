@@ -1,28 +1,33 @@
-#include <utils.c>
-#include <print.c>
 
-#include "../gfx/vga.c"
+#include <gfx/vga.h>
+#include <lib/utils.h>
+#include <lib/print.h>
+#include <sys/syscalls.h>
 
-#include "../interrupts/idt.c"
-#include "../interrupts/syscall.c"
+// Should only be include by the kernel
+#include <interrupts/idt.h>
 
 void test_exceptions()
 {
     int a = 1 / 0;
 }
 
-void test_syscall()
+void test_syscalls()
 {
-    kernel_syscall(SYSCALL_01);
+    syscall(SYSCALL_01);
+    syscall(SYSCALL_02);
 }
 
 void kernel_main()
 {
-    vga_setcolor(VGA_COLOR_GREEN);
+    setcolor(VGA_COLOR_GREEN);
     printf("[OK] Printf Test = %d\n", 0xB);
 
     test_exceptions();
-    test_syscall();
+    test_syscalls();
+
+    // init_serial();
+    // write_serial('A');
 }
 
 extern void _start()

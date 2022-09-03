@@ -1,16 +1,7 @@
-#pragma once
+#include <interrupts/isr.h>
 
-#include <utils.c>
-#include <print.c>
-
-typedef struct
-{
-    uint16_t ip;
-    uint16_t cs;
-    uint16_t flags;
-    uint16_t sp;
-    uint16_t ss;
-} __attribute__((packed)) InterruptFrame32;
+#include <lib/print.h>
+#include <sys/syscalls.h>
 
 __attribute__((interrupt)) void divide_by_zero_handler(InterruptFrame32 *frame)
 {
@@ -27,7 +18,7 @@ __attribute__((interrupt)) void page_fault_handler(InterruptFrame32 *frame, uint
     printf("[EXCEPTION] Page fault\n");
     restore_color();
 
-    asm("hlt");
+    __asm__("hlt");
 }
 
 __attribute__((interrupt)) void double_fault_handler(InterruptFrame32 *frame, uint32_t error_code)
@@ -35,5 +26,24 @@ __attribute__((interrupt)) void double_fault_handler(InterruptFrame32 *frame, ui
     setcolor(VGA_COLOR_RED);
     printf("[EXCEPTION] Double fault\n");
     restore_color();
-    asm("hlt");
+    __asm__("hlt");
+}
+
+__attribute__((interrupt)) void syscall_handler(InterruptFrame32 *frame)
+{
+    register int syscall_index __asm__("eax");
+    switch (syscall_index)
+    {
+    case 1:
+        syscall_test01();
+        break;
+    case 2:
+        syscall_test02();
+        break;
+
+    default:
+        break;
+    }
+
+    frame->ip++;
 }

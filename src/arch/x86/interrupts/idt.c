@@ -1,9 +1,7 @@
-#pragma once
+#include <interrupts/idt.h>
+#include <interrupts/isr.h>
 
-#include <utils.c>
-
-#include "isr.c"
-#include "syscall.c"
+#include <lib/utils.h>
 
 // flags
 #define TRAP_GATE 0x8F     // 32 bit trap gate (p=1, dpl=0b00, type=0b1111 => type_attributes=1000_1111b=0x8F)
@@ -39,8 +37,6 @@ IdtEntry32 idt_entry(void *handler_ptr, uint8_t flags)
     return idt_entry;
 }
 
-extern void idt_load();
-
 void idt_init()
 {
     uint16_t idt_size = sizeof idt_entries;
@@ -57,8 +53,7 @@ void idt_init()
     idt_entries[13] = idt_entry(page_fault_handler, TRAP_GATE);
 
     // Syscall handler
-    idt_entries[128] = idt_entry(syscall_hanlder, INT_GATE_USER);
+    idt_entries[128] = idt_entry(syscall_handler, INT_GATE_USER);
 
-    // defined in kernel_entry.asm
-    idt_load();
+    __asm__("lidt %0"::"m"(idt_descriptor));
 }

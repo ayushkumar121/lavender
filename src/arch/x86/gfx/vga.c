@@ -1,9 +1,4 @@
-#pragma once
-
-#include <utils.c>
-
-#define ROWS 25
-#define COLS 80
+#include <gfx/vga.h>
 
 enum vga_color
 {
@@ -25,16 +20,7 @@ enum vga_color
     VGA_COLOR_WHITE = 15,
 };
 
-typedef struct
-{
-    int col;
-    int row;
-    char *buf;
-    char color;
-    char previous_color;
-    int initialized;
-} VgaWriter;
-
+// TODO: add a mutex
 VgaWriter writer;
 
 void vga_init()
