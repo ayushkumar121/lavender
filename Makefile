@@ -14,13 +14,12 @@ OBJ=$(patsubst $(SDIR)/%.c, $(ODIR)/%.o, $(SFILES))
 
 CFLAGS=-std=c11 -ffreestanding -masm=intel -m32 -mgeneral-regs-only -g -I$(IDIR)
 
-dirs:
-	$(shell mkdir -p $(DIRS))
+$(shell mkdir -p $(DIRS))
 
-$(ODIR)/%.o: $(dirs) $(SDIR)/%.c $(DEPS)
+$(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
-build: $(dirs) $(OBJ)
+build: $(OBJ)
 	nasm -f elf $(SDIR)/kernel/kernel_entry.asm -o $(ODIR)/kernel/kernel_entry.o
 	i386-elf-ld -o $(ODIR)/x86/full_kernel.bin -Ttext 0x1000 $(ODIR)/kernel/kernel_entry.o $(OBJ) --oformat binary
 

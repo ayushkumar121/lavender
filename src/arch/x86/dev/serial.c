@@ -1,88 +1,128 @@
 #include <dev/serial.h>
+#include <lib/utils.h>
+#include <lib/string.h>
 
-static void outb(uint16_t port, uint8_t byte)
+#include <stdarg.h>
+
+void outb(uint16_t port, uint8_t byte)
 {
     __asm__("out %0, %1"
-        :
-        : "Nd"(port), "a"(byte)
-        :);
+            :
+            : "Nd"(port), "a"(byte)
+            :);
 }
 
-static uint8_t inb(uint16_t port)
+uint8_t inb(uint16_t port)
 {
     uint8_t byte;
     __asm__("in %0, %1"
-        : "=a"(byte)
-        : "Nd"(port)
-        :);
+            : "=a"(byte)
+            : "Nd"(port)
+            :);
     return byte;
 }
 
-void serial_init(const uint8_t port)
+int serial_empty(uint16_t port)
 {
+    return inb(port + 5) & 0x20;
 }
 
-void serial_printf(const uint8_t port, const char *fmt, ...)
+int serial_init(const uint16_t port)
 {
+    outb(port + 1, 0x00); // Disable all interrupts
+    outb(port + 3, 0x80); // Enable DLAB (set baud rate divisor)
+    outb(port + 0, 0x03); // Set divisor to 3 (lo byte) 38400 baud
+    outb(port + 1, 0x00); //                  (hi byte)
+    outb(port + 3, 0x03); // 8 bits, no parity, one stop bit
+    outb(port + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
+    outb(port + 4, 0x0B); // IRQs enabled, RTS/DSR set
+    outb(port + 4, 0x1E); // Set in loopback mode, test the serial chip
+    outb(port + 0, 0xAE); // Test serial chip (send byte 0xAE and check if serial returns same byte)
+
+    // Check if serial is faulty (i.e: not same byte as sent)
+    if (inb(port + 0) != 0xAE)
+    {
+        return SERIAL_FAILED;
+    }
+
+    // If serial is not faulty set it in normal operation mode
+    // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
+    outb(port + 4, 0x0F);
+    return SERIAL_OK;
 }
 
+void serial_puchar(uint16_t port, char a)
+{
+    while (serial_empty(port) == 0)
+        ;
 
+    outb(port, a);
+}
 
+void serial_puts(uint16_t port, char *str)
+{
+    while (*str)
+    {
+        serial_puchar(port, *str++);
+    }
+}
 
-// void outb(uint16_t port, uint8_t byte)
-// {
-//     asm("out %0, %1"
-//         :
-//         : "Nd"(port), "a"(byte)
-//         :);
-// }
+void serial_printf(const uint16_t port, const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
 
-// uint8_t inb(uint16_t port)
-// {
-//     uint8_t byte;
-//     asm("in %0, %1"
-//         : "=a"(byte)
-//         : "Nd"(port)
-//         :);
-//     return byte;
-// }
+    while (*fmt)
+    {
+        char ch = *fmt++;
+        if (ch == '%')
+        {
+            char tp = *fmt++;
+            switch (tp)
+            {
+            case 'd':
+            {
+                ShortString ss;
+                int num = va_arg(args, int);
 
-// int init_serial()
-// {
-//     printf("[OK]");
+                itoa(num, ss.data);
+                serial_puts(port, ss.data);
+            }
+            break;
 
-//     outb(PORT + 1, 0x00); // Disable all interrupts
-//     outb(PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
-//     outb(PORT + 0, 0x03); // Set divisor to 3 (lo byte) 38400 baud
-//     outb(PORT + 1, 0x00); //                  (hi byte)
-//     outb(PORT + 3, 0x03); // 8 bits, no parity, one stop bit
-//     outb(PORT + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
-//     outb(PORT + 4, 0x0B); // IRQs enabled, RTS/DSR set
-//     outb(PORT + 4, 0x1E); // Set in loopback mode, test the serial chip
-//     outb(PORT + 0, 0xAE); // Test serial chip (send byte 0xAE and check if serial returns same byte)
+            case 'l':
+            {
+                ShortString ss;
+                long num = va_arg(args, long);
 
+                itoa(num, ss.data);
+                serial_puts(port, ss.data);
+            }
+            break;
 
-//     // Check if serial is faulty (i.e: not same byte as sent)
-//     if (inb(PORT + 0) != 0xAE)
-//     {
-//         return 1;
-//     }
+            case 'c':
+            {
+                char c = va_arg(args, int);
+                serial_puchar(port, c);
+            }
+            break;
 
-//     // If serial is not faulty set it in normal operation mode
-//     // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
-//     outb(PORT + 4, 0x0F);
-//     return 0;
-// }
+            case 's':
+            {
+                char *s = va_arg(args, char *);
+                serial_puts(port, s);
+            }
+            break;
 
-// int is_transmit_empty()
-// {
-//     return inb(PORT + 5) & 0x20;
-// }
+            default:
+                break;
+            }
+        }
+        else
+        {
+            serial_puchar(port, ch);
+        }
+    }
 
-// void write_serial(char a)
-// {
-//     while (is_transmit_empty() == 0)
-//         ;
-
-//     outb(PORT, a);
-// }
+    va_end(args);
+}

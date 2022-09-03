@@ -11,5 +11,11 @@
 #define COM7 0x5E8
 #define COM8 0x4E8
 
-void serial_init(const uint8_t port);
-void serial_printf(const uint8_t port, const char *fmt, ...);
+enum
+{
+    SERIAL_OK,
+    SERIAL_FAILED,
+};
+
+int serial_init(const uint16_t port);
+void serial_printf(const uint16_t port, const char *fmt, ...);
