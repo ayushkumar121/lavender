@@ -1,25 +1,28 @@
-#include "../lib/utils.c"
-#include "../lib/vga.c"
+#include <utils.c>
+#include <print.c>
+
+#include "../gfx/vga.c"
 
 #include "../interrupts/idt.c"
 #include "../interrupts/syscall.c"
 
+void test_exceptions()
+{
+    int a = 1 / 0;
+}
+
+void test_syscall()
+{
+    kernel_syscall(SYSCALL_01);
+}
+
 void kernel_main()
 {
     vga_setcolor(VGA_COLOR_GREEN);
-    vga_puts( "[OK] ");
-    vga_puts( "TTY Test\n");
+    printf("[OK] Printf Test = %d\n", 0xB);
 
-    // Testing interrupts
-    int a = 1 / 0;
-
-    vga_puts( "[OK] ");
-    vga_puts( "Handling exceptions\n");
-
-    syscall(SYSCALL_01);
-
-    vga_puts( "[OK] ");
-    vga_puts( "Handling syscalls\n");
+    test_exceptions();
+    test_syscall();
 }
 
 extern void _start()

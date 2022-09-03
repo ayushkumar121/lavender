@@ -1,9 +1,6 @@
-/*
-    This file contains architectural independent utility functions
-*/
-
 #pragma once
 
+#include <stdarg.h>
 
 typedef unsigned char uint8_t;
 typedef unsigned short int uint16_t;
@@ -15,9 +12,15 @@ typedef unsigned long int size_t;
 #define true 1
 #define false 0
 
-unsigned long strlen(const char *str)
+typedef struct 
 {
-    int size = 0;
+    char data[128];
+} ShortString;
+
+
+size_t strlen(const char *str)
+{
+    size_t size = 0;
     while (*str++)
         size++;
     return size;
@@ -48,10 +51,11 @@ void itoa(int value, char *buf)
     strrev(buf);
 }
 
-void* memset(void *s, int c, size_t n)
+void *memset(void *s, int c, size_t n)
 {
-    unsigned char* buf = (unsigned char*) s;
-    for (size_t i; i<n; ++i) {
+    unsigned char *buf = (unsigned char *)s;
+    for (size_t i; i < n; ++i)
+    {
         buf[i] = c;
     }
 

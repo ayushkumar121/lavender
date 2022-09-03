@@ -3,8 +3,6 @@
 extern _start
 
 global idt_load
-global syscall
-
 extern idt_descriptor
 
 section .text

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils.c"
+#include <utils.c>
 
 #define ROWS 25
 #define COLS 80
@@ -25,7 +25,7 @@ enum vga_color
     VGA_COLOR_WHITE = 15,
 };
 
-typedef struct VgaWriter
+typedef struct
 {
     int col;
     int row;
@@ -54,9 +54,9 @@ void vga_newline()
 
 void vga_putchar(char ch)
 {
-    if(!writer.initialized)
+    if (!writer.initialized)
         return;
-    
+
     int k = (writer.row * COLS + writer.col) * 2;
 
     if (ch != '\n')
@@ -78,7 +78,6 @@ void vga_putchar(char ch)
         vga_newline();
     }
 }
-
 
 void vga_setcolor(char color_code)
 {

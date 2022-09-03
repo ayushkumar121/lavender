@@ -36,8 +36,8 @@ mov ah, 0x0
 mov al, 0x3
 int 0x10
 
-CODE_SEG equ code_descriptor - gdt_start
-DATA_SEG equ data_descriptor - gdt_start
+CODE_SEG equ kernel_code_descriptor - gdt_start
+DATA_SEG equ kernel_data_descriptor - gdt_start
 
 
 cli ;; Disable all interupts
@@ -60,20 +60,34 @@ gdt_start:
     null_descriptor:
         dd 0
         dd 0
-    code_descriptor:
+    kernel_code_descriptor:
         dw 0xffff ;; first 16 bit of the limit
         dw 0      ;; first 24 bit of base
         db 0      ;;  
-        db 0b10011010 ;; present, privileage, type
+        db 0x9A ;; present, privileage, type
         db 0b11001111 ;; other + limit
         db 0
-    data_descriptor:
+    kernel_data_descriptor:
         dw 0xffff
         dw 0
         db 0
-        db 0b10010010
+        db 0x92
         db 0b11001111
         db 0
+    user_code_descriptor:
+        dw 0xffff
+        dw 0
+        db 0
+        db 0xFA
+        db 0b11001111
+        db 0
+    user_data_descriptor:
+        dw 0xffff
+        dw 0
+        db 0
+        db 0xF2
+        db 0b11001111
+        db 0   
 gdt_end:
 
 boot_disk: db 0
