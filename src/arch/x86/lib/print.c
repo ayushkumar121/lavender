@@ -2,6 +2,7 @@
 #include <lib/types.h>
 #include <lib/utils.h>
 #include <lib/string.h>
+
 #include <gfx/vga.h>
 
 #include <stdarg.h>

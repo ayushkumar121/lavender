@@ -10,4 +10,9 @@ OS inspired by microservice architecture of web
 
 # References
 - https://wiki.osdev.org/
-- https://os.phil-opp.com/
+
+- Design
+    - https://os.phil-opp.com/
+
+- Paging
+    - https://intermezzos.github.io/book/first-edition/paging.html 

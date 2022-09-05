@@ -11,11 +11,16 @@
 #define COM7 0x5E8
 #define COM8 0x4E8
 
-enum
+enum SerialStatus
 {
     SERIAL_OK,
     SERIAL_FAILED,
 };
 
+// General harware bound 
+void outb(uint16_t port, uint8_t byte);
+uint8_t inb(uint16_t port);
+
+// Iniitilaize com port I/O
 int serial_init(const uint16_t port);
-void serial_printf(const uint16_t port, const char *fmt, ...);
+__attribute__((format(printf, 2, 3))) void serial_printf(const uint16_t port, const char *fmt, ...);

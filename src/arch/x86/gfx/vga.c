@@ -1,34 +1,16 @@
 #include <gfx/vga.h>
+#include <gfx/vga_colors.h>
 
-enum vga_color
-{
-    VGA_COLOR_BLACK = 0,
-    VGA_COLOR_BLUE = 1,
-    VGA_COLOR_GREEN = 2,
-    VGA_COLOR_CYAN = 3,
-    VGA_COLOR_RED = 4,
-    VGA_COLOR_MAGENTA = 5,
-    VGA_COLOR_BROWN = 6,
-    VGA_COLOR_LIGHT_GREY = 7,
-    VGA_COLOR_DARK_GREY = 8,
-    VGA_COLOR_LIGHT_BLUE = 9,
-    VGA_COLOR_LIGHT_GREEN = 10,
-    VGA_COLOR_LIGHT_CYAN = 11,
-    VGA_COLOR_LIGHT_RED = 12,
-    VGA_COLOR_LIGHT_MAGENTA = 13,
-    VGA_COLOR_LIGHT_BROWN = 14,
-    VGA_COLOR_WHITE = 15,
-};
-
-// TODO: add a mutex
+// TODO: add a mutex to writer
 VgaWriter writer;
 
 void vga_init()
 {
-    writer.buf = (char *)0xb8000;
+    writer.buffer = (VgaBuffer *)0xb8000;
     writer.col = 0;
     writer.row = 0;
     writer.color = VGA_COLOR_WHITE;
+    writer.previous_color = VGA_COLOR_WHITE;
     writer.initialized = true;
 }
 
@@ -47,8 +29,8 @@ void vga_putchar(char ch)
 
     if (ch != '\n')
     {
-        writer.buf[k] = ch;
-        writer.buf[k + 1] = writer.color;
+        writer.buffer->chars[k].ascii_character = ch;
+        writer.buffer->chars[k + 1].color_code = writer.color;
 
         if (writer.col < COLS)
         {

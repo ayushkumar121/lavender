@@ -36,6 +36,7 @@ int serial_init(const uint16_t port)
     outb(port + 3, 0x03); // 8 bits, no parity, one stop bit
     outb(port + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
     outb(port + 4, 0x0B); // IRQs enabled, RTS/DSR set
+    
     outb(port + 4, 0x1E); // Set in loopback mode, test the serial chip
     outb(port + 0, 0xAE); // Test serial chip (send byte 0xAE and check if serial returns same byte)
 
@@ -67,7 +68,7 @@ void serial_puts(uint16_t port, char *str)
     }
 }
 
-void serial_printf(const uint16_t port, const char *fmt, ...)
+__attribute__((format(printf, 2, 3))) void serial_printf(const uint16_t port, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);

@@ -17,7 +17,6 @@ __attribute__((interrupt)) void page_fault_handler(InterruptFrame32 *frame, uint
     setcolor(VGA_COLOR_RED);
     printf("[EXCEPTION] Page fault\n");
     restore_color();
-
     __asm__("hlt");
 }
 

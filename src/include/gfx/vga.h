@@ -7,11 +7,25 @@
 
 typedef struct
 {
-    int col;
+    char ascii_character;
+    char color_code;
+} VgaScreenChar;
+
+typedef struct
+{
+    VgaScreenChar chars[ROWS * COLS];
+} VgaBuffer;
+
+typedef struct
+{
+    VgaBuffer *buffer;
+
     int row;
-    char *buf;
+    int col;
+
     char color;
     char previous_color;
+
     int initialized;
 } VgaWriter;
 

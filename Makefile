@@ -12,7 +12,7 @@ DEPS   := $(shell find $(IDIR) -name "*.h")
 SFILES := $(shell find $(SDIR) -name "*.c")
 OBJ=$(patsubst $(SDIR)/%.c, $(ODIR)/%.o, $(SFILES))
 
-CFLAGS=-std=c11 -ffreestanding -masm=intel -m32 -mgeneral-regs-only -g -I$(IDIR)
+CFLAGS=-std=c11 -Wall -ffreestanding -masm=intel -mgeneral-regs-only -g -I$(IDIR)
 
 $(shell mkdir -p $(DIRS))
 
@@ -31,4 +31,4 @@ clean:
 	rm -f $(ODIR)/*.o
 
 run:
-	qemu-system-x86_64 -drive file=$(ODIR)/x86/$(PNAME).bin,format=raw -serial stdio
+	qemu-system-x86_64 -drive file=$(ODIR)/x86/$(PNAME).bin,format=raw -serial stdio -vga std -display sdl
