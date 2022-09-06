@@ -65,11 +65,6 @@ start_protected_mode:
     mov bx, CODE_SEG
     jmp KERNEL_LOCATION
 
-idt: ;; Empty IDT
-    .pointer:
-        dw 0
-        dd 0  
-
 gdt: ;; Flat GDT 
     .null:
         dq 0

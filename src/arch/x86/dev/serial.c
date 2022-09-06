@@ -1,6 +1,6 @@
 #include <dev/serial.h>
 #include <lib/utils.h>
-#include <lib/string.h>
+#include <lib/sstring.h>
 
 #include <stdarg.h>
 
@@ -73,57 +73,8 @@ __attribute__((format(printf, 2, 3))) void serial_printf(const uint16_t port, co
     va_list args;
     va_start(args, fmt);
 
-    while (*fmt)
-    {
-        char ch = *fmt++;
-        if (ch == '%')
-        {
-            char tp = *fmt++;
-            switch (tp)
-            {
-            case 'd':
-            {
-                ShortString ss;
-                int num = va_arg(args, int);
-
-                itoa(num, ss.data);
-                serial_puts(port, ss.data);
-            }
-            break;
-
-            case 'l':
-            {
-                ShortString ss;
-                long num = va_arg(args, long);
-
-                itoa(num, ss.data);
-                serial_puts(port, ss.data);
-            }
-            break;
-
-            case 'c':
-            {
-                char c = va_arg(args, int);
-                serial_puchar(port, c);
-            }
-            break;
-
-            case 's':
-            {
-                char *s = va_arg(args, char *);
-                serial_puts(port, s);
-            }
-            break;
-
-            default:
-                break;
-            }
-        }
-        else
-        {
-            serial_puchar(port, ch);
-        }
-    }
+    SString ss = ss_printf(fmt, args);
+    serial_puts(port, ss.data);
 
     va_end(args);
 }

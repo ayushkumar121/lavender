@@ -25,12 +25,12 @@ void itoa(size_t value, char *buf)
     bool neg = false;
     size_t k = 0;
 
-    if(value < 0)
+    if (value < 0)
     {
         value *= -1;
         neg = true;
     }
-    
+
     if (value == 0)
     {
         buf[k++] = '0';
@@ -44,7 +44,7 @@ void itoa(size_t value, char *buf)
         buf[k++] = rem + '0';
     }
 
-    if(neg)
+    if (neg)
     {
         buf[k++] = '-';
     }
@@ -55,7 +55,7 @@ void itoa(size_t value, char *buf)
 void *memset(void *s, int c, size_t n)
 {
     unsigned char *buf = (unsigned char *)s;
-    for (size_t i; i < n; ++i)
+    for (size_t i = 0; i < n; ++i)
     {
         buf[i] = c;
     }
