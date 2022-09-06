@@ -8,7 +8,6 @@
 
 mov [boot_disk], dl
 
-PAGING_LOCATION equ 0x512
 KERNEL_LOCATION equ 0x1000
 
 ;; Setting up the stack for 16 bit real mode (setting everything to zero)
@@ -40,9 +39,6 @@ int 0x10
 CODE_SEG equ gdt.code - gdt
 DATA_SEG equ gdt.data - gdt
 
-call disable_pic
-
-lidt [idt.pointer]
 lgdt [gdt.pointer]
 
 ;; Switching to protected mode
@@ -52,13 +48,6 @@ mov cr0, eax
 
 jmp CODE_SEG:start_protected_mode
 jmp $
-
-; Disabling PIC to not double fault on unmapped IRQs
-disable_pic:
-    mov al, 0xFF                 
-    out 0xA1, al
-    out 0x21, al
-    ret
 
 [bits 32]
 start_protected_mode:
@@ -81,7 +70,7 @@ idt: ;; Empty IDT
         dw 0
         dd 0  
 
-gdt: ;; Flat memory model 
+gdt: ;; Flat GDT 
     .null:
         dq 0
     .code:
