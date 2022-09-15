@@ -1,14 +1,17 @@
+#include <gfx/vga.h>
 #include <gfx/vga_colors.h>
+
+#include <dev/serial.h>
 
 void kernel_main()
 {
-    char *mem = 0xb8000;
-    *mem  = 'A';
-    *(mem+1)  = VGA_COLOR_BLUE << 4 | VGA_COLOR_CYAN ;
+    vga_printf("HIIIIIIIIIIIIIIIII");
+    serial_printf(COM1, "Hello world\n");
 }
-
 
 extern void _start()
 {
+    vga_init();
+    serial_init(COM1);
     kernel_main();
 }

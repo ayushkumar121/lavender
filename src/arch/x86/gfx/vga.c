@@ -1,12 +1,16 @@
 #include <gfx/vga.h>
 #include <gfx/vga_colors.h>
+#include <dev/serial.h>
+#include <lib/sstring.h>
+
+#include <stdarg.h>
 
 // TODO: add a mutex to writer
 VgaWriter writer;
 
 void vga_init()
 {
-    writer.buffer = (VgaBuffer *)0xb8000;
+    writer.buffer = (VgaBuffer*)0xb8000;
     writer.col = 0;
     writer.row = 0;
     writer.color = VGA_COLOR_WHITE;
@@ -25,12 +29,12 @@ void vga_putchar(char ch)
     if (!writer.initialized)
         return;
 
-    int k = (writer.row * COLS + writer.col) * 2;
+    int k = (writer.row * COLS + writer.col);
 
     if (ch != '\n')
     {
         writer.buffer->chars[k].ascii_character = ch;
-        writer.buffer->chars[k + 1].color_code = writer.color;
+        writer.buffer->chars[k].color_code = writer.color;
 
         if (writer.col < COLS)
         {
@@ -66,4 +70,15 @@ void vga_puts(char *str)
     {
         vga_putchar(*str++);
     }
+}
+
+__attribute__((format(printf, 1, 2))) void vga_printf(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+
+    SString ss = ss_printf(fmt, args);
+    vga_puts(ss.data);
+
+    va_end(args);
 }
