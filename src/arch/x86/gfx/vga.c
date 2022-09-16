@@ -5,8 +5,35 @@
 
 #include <stdarg.h>
 
+#define ROWS 25
+#define COLS 80
+
+typedef struct
+{
+    char ascii_character;
+    char color_code;
+} __attribute__((packed)) VgaScreenChar;
+
+typedef struct
+{
+    VgaScreenChar chars[ROWS * COLS];
+} VgaBuffer;
+
+typedef struct
+{
+    VgaBuffer *buffer;
+
+    int row;
+    int col;
+
+    char color;
+    char previous_color;
+
+    int initialized;
+} VgaWriter;
+
 // TODO: add a mutex to writer
-VgaWriter writer;
+static VgaWriter writer;
 
 void vga_init()
 {

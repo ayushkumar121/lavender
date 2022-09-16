@@ -25,15 +25,16 @@ void itoa(size_t value, char *buf)
     bool neg = false;
     size_t k = 0;
 
+    if (value == 0)
+    {
+        buf[k++] = '0';
+        return;
+    }
+
     if (value < 0)
     {
         value *= -1;
         neg = true;
-    }
-
-    if (value == 0)
-    {
-        buf[k++] = '0';
     }
 
     while (value)

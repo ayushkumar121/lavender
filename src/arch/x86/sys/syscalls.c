@@ -1,7 +1,5 @@
 #include <sys/syscalls.h>
-
 #include <dev/serial.h>
-#include <lib/print.h>
 
 volatile void syscall(int syscall_index)
 {
@@ -11,14 +9,10 @@ volatile void syscall(int syscall_index)
 
 void syscall_test01(void)
 {
-    setcolor(VGA_COLOR_CYAN);
-    printf("[SYSCALL] Syscall 1 called\n");
-    restore_color();
+    serial_printf(COM1, "[SYSCALL] Syscall 1 called\n");
 }
 
 void syscall_test02(void)
 {
-    setcolor(VGA_COLOR_CYAN);
-    printf("[SYSCALL] Syscall 2 called\n");
-    restore_color();
+    serial_printf(COM1, "[SYSCALL] Syscall 2 called\n");
 }
