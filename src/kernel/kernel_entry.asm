@@ -100,12 +100,19 @@ gdt64: ;; 64 bit GDT
 
 section .bss
 
+[global idt_entries]
+idt_entries:
+   resb 4096  ; Reserve 4 KiB for idt_entries
+
+; [global idt_descriptor]
+; idt_descriptor:
+;    resb 10  ; Reserve 10 bytes for idt_descriptor
+
 stack_begin:
     resb 4096  ; Reserve 4 KiB stack space
 stack_end:
 
 align 4096
-
 p4_table:
     resb 4096
 p3_table:

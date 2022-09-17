@@ -1,14 +1,15 @@
 #pragma once
 
 #include <lib/types.h>
+#define MAX_SSTRING 64
 
 typedef struct 
 {
-    uint8_t length;
-    char data[256];
+    char data[MAX_SSTRING];
 } SString;
 
 
+size_t ss_len(SString a);
 SString ss_from_cstr(const char *a);
 SString ss_cat(SString a, SString b);
 

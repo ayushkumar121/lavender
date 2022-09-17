@@ -21,7 +21,7 @@ mov bx, KERNEL_LOCATION
 
 ;; reading from disk
 mov ah, 2 ;; disk reading mode
-mov al, 10 ;; no of sectors to read (Loads 10KiB of memory)
+mov al, 30 ;; no of sectors to read (Loads 10KiB of memory)
 
 ;; CSH addressing
 mov ch, 0 ;; cylinder no

@@ -3,6 +3,15 @@
 
 #include <stdarg.h>
 
+size_t ss_len(SString a)
+{
+    size_t k = 0;
+    char *ptr = a.data;
+    while (*ptr++)
+        k++;
+    return k;
+}
+
 SString ss_from_cstr(const char *a)
 {
     uint8_t k = 0;
@@ -13,22 +22,22 @@ SString ss_from_cstr(const char *a)
         result.data[k++] = *a++;
     }
 
-    result.length = k;
     return result;
 }
 
 SString ss_cat(SString a, SString b)
 {
     SString result = {0};
-    result.length = a.length + b.length;
+    size_t n = ss_len(a);
+    size_t m = ss_len(b);
 
     uint8_t k = 0;
-    for (size_t i = 0; i < a.length; i++)
+    for (size_t i = 0; i < n; ++i)
     {
         result.data[k++] = a.data[i];
     }
 
-    for (size_t i = 0; i < b.length; i++)
+    for (size_t i = 0; i < m; ++i)
     {
         result.data[k++] = b.data[i];
     }
@@ -49,18 +58,17 @@ __attribute__((format(printf, 1, 2))) SString ss_printf(const char *fmt, ...)
         char ch = *fmt++;
         if (ch == '%')
         {
-            char tp = *fmt++;
-
+            char tp = *(fmt++);
             switch (tp)
             {
             case 'd':
             {
-                SString ss;
-                int num = va_arg(args, int);
-
+                SString ss = {0};
+                uint32_t num = va_arg(args, int);
                 itoa(num, ss.data);
+
                 result = ss_cat(result, ss);
-                k += ss.length;
+                k += ss_len(ss);
             }
             break;
 
@@ -90,6 +98,5 @@ __attribute__((format(printf, 1, 2))) SString ss_printf(const char *fmt, ...)
     }
 
     va_end(args);
-
     return result;
 }
