@@ -5,8 +5,8 @@
 
 #include <stdarg.h>
 
-#define ROWS 25
-#define COLS 80
+#define VGA_ROWS 25
+#define VGA_COLS 80
 
 typedef struct
 {
@@ -16,13 +16,13 @@ typedef struct
 
 typedef struct
 {
-    VgaScreenChar chars[ROWS * COLS];
+    VgaScreenChar chars[VGA_ROWS][VGA_COLS];
 } VgaBuffer;
 
 typedef struct
 {
     VgaBuffer *buffer;
-    
+
     int row;
     int col;
     char color;
@@ -34,29 +34,44 @@ static VgaWriter writer;
 
 void vga_init()
 {
-    writer.buffer = (VgaBuffer*)0xb8000;
+    writer.buffer = (VgaBuffer *)0xb8000;
     writer.col = 0;
-    writer.row = 0;
+    writer.row = VGA_ROWS - 1;
     writer.color = VGA_COLOR_WHITE;
     writer.previous_color = VGA_COLOR_WHITE;
 }
 
+void vga_clearrow(int row)
+{
+    for (int col = 0; col < VGA_COLS; ++col)
+    {
+        writer.buffer->chars[row][col].ascii_character = ' ';
+    }
+}
+
 void vga_newline()
 {
+
+    for (int row = 1; row < VGA_ROWS; ++row)
+    {
+        for (int col = 0; col < VGA_COLS; ++col)
+        {
+            writer.buffer->chars[row - 1][col] = writer.buffer->chars[row][col];
+        }
+    }
+    
+    vga_clearrow(VGA_ROWS - 1);
     writer.col = 0;
-    writer.row++;
 }
 
 void vga_putchar(char ch)
 {
-    int k = (writer.row * COLS + writer.col);
-
     if (ch != '\n')
     {
-        writer.buffer->chars[k].ascii_character = ch;
-        writer.buffer->chars[k].color_code = writer.color;
+        writer.buffer->chars[writer.row][writer.col].ascii_character = ch;
+        writer.buffer->chars[writer.row][writer.col].color_code = writer.color;
 
-        if (writer.col < COLS)
+        if (writer.col < VGA_COLS)
         {
             writer.col++;
         }

@@ -95,7 +95,7 @@ SString ss_vprintf(const char *fmt, va_list args)
             case 'x':
             {
                 SString ss = {0};
-                int64_t num = va_arg(args, int64_t);
+                uint64_t num = va_arg(args, uint64_t);
                 itoa(num, ss.data, 16);
 
                 result = ss_cat(result, ss_from_cstr("0x"));

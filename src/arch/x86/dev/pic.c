@@ -10,9 +10,8 @@
 #define PIC2_COMMAND PIC2
 #define PIC2_DATA (PIC2 + 1)
 
-
 #define CMD_INIT 0x11
-#define CMD_MODE_8086 0x01  
+#define CMD_MODE_8086 0x01
 #define CMD_END_OF_INTERRUPT 0x20
 
 /*
@@ -26,8 +25,6 @@ void wait()
 
 void pic_init()
 {
-    serial_init(WAIT_PORT);
-
     unsigned char a1, a2;
 
     a1 = inb(PIC1_DATA); // save masks
@@ -62,10 +59,13 @@ void pic_init()
 }
 
 // Notify the interrupt has been processed
-void pic_eoi()
+void pic_eoi(int interrupt_index)
 {
+    if (interrupt_index >= PIC_2_OFFSET)
+    {
+        outb(PIC2_COMMAND, CMD_END_OF_INTERRUPT);
+    }
     outb(PIC1_COMMAND, CMD_END_OF_INTERRUPT);
-    wait();
 }
 
 void pic_disable()
