@@ -2,7 +2,7 @@
 
 #include <stdarg.h>
 #include <lib/types.h>
-#define MAX_SSTRING 64
+#define MAX_SSTRING 128
 
 typedef struct 
 {

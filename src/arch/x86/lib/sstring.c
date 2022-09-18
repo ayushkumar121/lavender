@@ -43,7 +43,6 @@ SString ss_cat(SString a, SString b)
     return result;
 }
 
-
 SString ss_vprintf(const char *fmt, va_list args)
 {
     SString result = {0};
@@ -52,16 +51,30 @@ SString ss_vprintf(const char *fmt, va_list args)
     while (*fmt)
     {
         char ch = *fmt++;
-        if (ch == '%')
+        if (ch == '%' && k < MAX_SSTRING - 1)
         {
             char tp = *(fmt++);
             switch (tp)
             {
+            case 'b':
+            {
+                SString ss = {0};
+                int32_t num = va_arg(args, int32_t);
+                itoa(num, ss.data, 2);
+
+                result = ss_cat(result, ss_from_cstr("0b"));
+                k += 2;
+
+                result = ss_cat(result, ss);
+                k += ss_len(ss);
+            }
+            break;
+
             case 'd':
             {
                 SString ss = {0};
                 int32_t num = va_arg(args, int32_t);
-                itoa(num, ss.data);
+                itoa(num, ss.data, 10);
 
                 result = ss_cat(result, ss);
                 k += ss_len(ss);
@@ -72,7 +85,21 @@ SString ss_vprintf(const char *fmt, va_list args)
             {
                 SString ss = {0};
                 int64_t num = va_arg(args, int64_t);
-                itoa(num, ss.data);
+                itoa(num, ss.data, 10);
+
+                result = ss_cat(result, ss);
+                k += ss_len(ss);
+            }
+            break;
+
+            case 'x':
+            {
+                SString ss = {0};
+                int64_t num = va_arg(args, int64_t);
+                itoa(num, ss.data, 16);
+
+                result = ss_cat(result, ss_from_cstr("0x"));
+                k += 2;
 
                 result = ss_cat(result, ss);
                 k += ss_len(ss);
@@ -91,6 +118,7 @@ SString ss_vprintf(const char *fmt, va_list args)
                 char *s = va_arg(args, char *);
                 SString ss = ss_from_cstr(s);
                 result = ss_cat(result, ss);
+                k += ss_len(ss);
             }
             break;
 
@@ -110,65 +138,11 @@ SString ss_vprintf(const char *fmt, va_list args)
 __attribute__((format(printf, 1, 2))) SString ss_printf(const char *fmt, ...)
 {
     SString result = {0};
-    uint8_t k = 0;
 
     va_list args;
     va_start(args, fmt);
 
-    while (*fmt)
-    {
-        char ch = *fmt++;
-        if (ch == '%')
-        {
-            char tp = *(fmt++);
-            switch (tp)
-            {
-            case 'd':
-            {
-                SString ss = {0};
-                int32_t num = va_arg(args, int32_t);
-                itoa(num, ss.data);
-
-                result = ss_cat(result, ss);
-                k += ss_len(ss);
-            }
-            break;
-
-            case 'l':
-            {
-                SString ss = {0};
-                int64_t num = va_arg(args, int64_t);
-                itoa(num, ss.data);
-
-                result = ss_cat(result, ss);
-                k += ss_len(ss);
-            }
-            break;
-
-            case 'c':
-            {
-                char c = va_arg(args, int);
-                result.data[k++] = c;
-            }
-            break;
-
-            case 's':
-            {
-                char *s = va_arg(args, char *);
-                SString ss = ss_from_cstr(s);
-                result = ss_cat(result, ss);
-            }
-            break;
-
-            default:
-                break;
-            }
-        }
-        else
-        {
-            result.data[k++] = ch;
-        }
-    }
+    result = ss_vprintf(fmt, args);
 
     va_end(args);
     return result;
