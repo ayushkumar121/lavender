@@ -98,10 +98,6 @@ section .bss
 idt_entries:
    resb 4096  ; Reserve 4 KiB for idt_entries
 
-; [global idt_descriptor]
-; idt_descriptor:
-;    resb 10  ; Reserve 10 bytes for idt_descriptor
-
 stack_begin:
     resb 4096  ; Reserve 4 KiB stack space
 stack_end:

@@ -14,7 +14,7 @@ static char keymap[0xff];
 static char key = 0;
 static char key_event = 0;
 
-void keymap_init()
+static void keymap_init()
 {
     keymap[0x1e] = 'a';
     keymap[0x1f] = 's';
@@ -66,9 +66,10 @@ void keymap_init()
     keymap[0x0b] = '0';
 
     keymap[0x1c] = '\n';
+    keymap[0x0E] = '\b';
 }
 
-__attribute__((interrupt)) void keyboard_handler(InterruptFrame *frame)
+__attribute__((interrupt)) static void keyboard_handler(InterruptFrame *frame)
 {
     char scancode = inb(0x60);
 

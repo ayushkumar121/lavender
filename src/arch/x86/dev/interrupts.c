@@ -24,10 +24,9 @@ typedef struct __attribute__((packed))
     uint64_t offset;
 } IdtDescriptor;
 
-static IdtDescriptor idt_descriptor;
-
 // defined in BSS section
 extern IdtEntry idt_entries[256];
+static IdtDescriptor idt_descriptor;
 
 void interrupts_init()
 {

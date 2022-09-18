@@ -32,16 +32,17 @@ typedef struct
 // TODO: add a mutex to writer
 static VgaWriter writer;
 
-void vga_init()
+static void update_cursor()
 {
-    writer.buffer = (VgaBuffer *)0xb8000;
-    writer.col = 0;
-    writer.row = VGA_ROWS - 1;
-    writer.color = VGA_COLOR_WHITE;
-    writer.previous_color = VGA_COLOR_WHITE;
+    uint16_t pos = (VGA_ROWS - 1) * 80 + writer.col;
+
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, (uint8_t)(pos & 0xFF));
+    outb(0x3D4, 0x0E);
+    outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
 }
 
-void vga_clearrow(int row)
+static void vga_clearrow(int row)
 {
     for (int col = 0; col < VGA_COLS; ++col)
     {
@@ -49,7 +50,7 @@ void vga_clearrow(int row)
     }
 }
 
-void vga_newline()
+static void vga_newline()
 {
 
     for (int row = 1; row < VGA_ROWS; ++row)
@@ -59,12 +60,12 @@ void vga_newline()
             writer.buffer->chars[row - 1][col] = writer.buffer->chars[row][col];
         }
     }
-    
+
     vga_clearrow(VGA_ROWS - 1);
     writer.col = 0;
 }
 
-void vga_putchar(char ch)
+static void vga_putchar(char ch)
 {
     if (ch != '\n')
     {
@@ -84,6 +85,25 @@ void vga_putchar(char ch)
     {
         vga_newline();
     }
+
+    update_cursor();
+}
+
+static void vga_puts(char *str)
+{
+    while (*str)
+    {
+        vga_putchar(*str++);
+    }
+}
+
+void vga_init()
+{
+    writer.buffer = (VgaBuffer *)0xb8000;
+    writer.col = 0;
+    writer.row = VGA_ROWS - 1;
+    writer.color = VGA_COLOR_WHITE;
+    writer.previous_color = VGA_COLOR_WHITE;
 }
 
 void vga_setcolor(char color_code)
@@ -97,14 +117,6 @@ void vga_restore_color()
     char temp = writer.color;
     writer.color = writer.previous_color;
     writer.previous_color = temp;
-}
-
-void vga_puts(char *str)
-{
-    while (*str)
-    {
-        vga_putchar(*str++);
-    }
 }
 
 __attribute__((format(printf, 1, 2))) void vga_printf(const char *fmt, ...)
