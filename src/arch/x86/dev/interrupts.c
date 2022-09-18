@@ -56,10 +56,6 @@ void interrupts_init()
 
 void interrupts_load()
 {
-    // Disbale PIC
-    outb(0xA1, 0xFF);
-    outb(0x21, 0xFF);
-
     __asm__ volatile("lidt %0" ::"m"(idt_descriptor));
     __asm__ volatile("sti");
 }
@@ -82,6 +78,7 @@ __attribute__((interrupt)) void default_interrupt_handler(InterruptFrame *frame)
     vga_setcolor(VGA_COLOR_RED);
     vga_printf("[Exception] Exception occured\n");
     vga_restore_color();
+    __asm__("hlt");
 }
 
 __attribute__((interrupt)) void default_interrupt_handler_errcode(InterruptFrame *frame, uint64_t error_code)
@@ -110,18 +107,10 @@ __attribute__((interrupt)) void page_fault_handler(InterruptFrame *frame, uint64
     __asm__("hlt");
 }
 
+// Syscalls
 __attribute__((interrupt)) void syscall_handler(InterruptFrame *frame)
 {
     register int syscall_index __asm__("eax");
     handle_syscall(syscall_index);
-    frame->ip++;
-}
-
-__attribute__((interrupt)) void pic_handler(InterruptFrame *frame)
-{
-    vga_setcolor(VGA_COLOR_GREEN);
-    vga_printf("[Exception] PIC handler\n");
-    vga_restore_color();
-
     frame->ip++;
 }

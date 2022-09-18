@@ -12,7 +12,7 @@ size_t strlen(const char *str)
 void strrev(char *str)
 {
     int n = strlen(str);
-    for (int i = 0; i < n / 2; i++)
+    for (int i = 0; i < n / 2; ++i)
     {
         char temp = str[i];
         str[i] = str[n - i - 1];
@@ -20,7 +20,7 @@ void strrev(char *str)
     }
 }
 
-void itoa(int64_t value, char *buf)
+void itoa(int64_t value, char *buf, int base)
 {
     bool neg = false;
     size_t k = 0;
@@ -39,10 +39,10 @@ void itoa(int64_t value, char *buf)
 
     while (value)
     {
-        int rem = value % 10;
-        value = value / 10;
+        int rem = value % base;
+        value = value / base;
 
-        buf[k++] = rem + '0';
+        buf[k++] = rem > 9 ? (rem - 10) + 'A' : rem + '0';
     }
 
     if (neg)

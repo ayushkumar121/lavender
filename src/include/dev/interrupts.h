@@ -33,5 +33,3 @@ __attribute__((interrupt)) void default_interrupt_handler_errcode(InterruptFrame
 __attribute__((interrupt)) void divide_by_zero_handler(InterruptFrame *frame);
 __attribute__((interrupt)) void page_fault_handler(InterruptFrame *frame, uint64_t error_code);
 __attribute__((interrupt)) void syscall_handler(InterruptFrame *frame);
-
-__attribute__((interrupt)) void pic_handler(InterruptFrame *frame);

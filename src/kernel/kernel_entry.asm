@@ -83,7 +83,7 @@ section .text
 
         call _start
 
-        hlt
+        jmp $
 
 
 section .rodata

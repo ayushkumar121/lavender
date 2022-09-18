@@ -32,4 +32,4 @@ clean:
 
 run:
 	qemu-system-x86_64 -drive file=$(ODIR)/x86/$(PNAME).bin,format=raw \
-	-serial stdio -vga std -display sdl -d int -no-reboot -no-shutdown &> qemu.log
+	-serial stdio -vga std -display sdl
