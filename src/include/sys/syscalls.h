@@ -7,7 +7,7 @@
 
 typedef void (*Syscall)();
 
-volatile void syscall(int syscall_index);
+void syscall(int syscall_index);
 
 void handle_syscall(int syscall_index);
 void syscall_test01(void);

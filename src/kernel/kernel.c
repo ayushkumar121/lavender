@@ -6,9 +6,12 @@
 
 #include <sys/syscalls.h>
 
+#include <lib/sstring.h>
+#include <stdarg.h>
+
 inline static void test_vga()
 {
-    vga_printf("Testing VGA text mode :(%d) \n", 10);
+    vga_printf("VGA text mode :(%d) \n", 10);
 }
 
 inline static void test_serial()
@@ -41,6 +44,8 @@ extern void _start()
     vga_init();
     serial_init(COM1);
     interrupts_init();
+    // PIC Remap and register keyboard
+    interrupts_load();
 
     kernel_main();
 }

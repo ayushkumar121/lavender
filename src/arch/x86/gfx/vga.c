@@ -22,14 +22,11 @@ typedef struct
 typedef struct
 {
     VgaBuffer *buffer;
-
+    
     int row;
     int col;
-
     char color;
     char previous_color;
-
-    int initialized;
 } VgaWriter;
 
 // TODO: add a mutex to writer
@@ -42,7 +39,6 @@ void vga_init()
     writer.row = 0;
     writer.color = VGA_COLOR_WHITE;
     writer.previous_color = VGA_COLOR_WHITE;
-    writer.initialized = true;
 }
 
 void vga_newline()
@@ -53,9 +49,6 @@ void vga_newline()
 
 void vga_putchar(char ch)
 {
-    if (!writer.initialized)
-        return;
-
     int k = (writer.row * COLS + writer.col);
 
     if (ch != '\n')
@@ -104,7 +97,7 @@ __attribute__((format(printf, 1, 2))) void vga_printf(const char *fmt, ...)
     va_list args;
     va_start(args, fmt);
 
-    SString ss = ss_printf(fmt, args);
+    SString ss = ss_vprintf(fmt, args);
     vga_puts(ss.data);
 
     va_end(args);

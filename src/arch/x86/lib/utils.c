@@ -20,7 +20,7 @@ void strrev(char *str)
     }
 }
 
-void itoa(size_t value, char *buf)
+void itoa(int64_t value, char *buf)
 {
     bool neg = false;
     size_t k = 0;

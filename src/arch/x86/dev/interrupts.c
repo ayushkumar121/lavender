@@ -3,6 +3,8 @@
 #include <gfx/vga.h>
 #include <gfx/vga_colors.h>
 
+#include <dev/serial.h>
+
 #include <sys/syscalls.h>
 
 typedef struct __attribute__((packed))
@@ -35,11 +37,10 @@ void interrupts_init()
     idt_descriptor.size = idt_size - 1;
     idt_descriptor.offset = (uint64_t)&idt_entries;
 
-    for (size_t i = 0; i < 256; i++)
+    for (size_t i = 0; i < 256; ++i)
     {
         if (i == 8 || (i > 9 && i < 15) || i == 17 || i == 21 || i == 29 || i == 30)
         {
-
             interrupts_add_handler(i, default_interrupt_handler_errcode, TRAP_GATE);
         }
         else
@@ -51,8 +52,16 @@ void interrupts_init()
     interrupts_add_handler(IRQ_DIVIDE_BY_ZERO, divide_by_zero_handler, TRAP_GATE);
     interrupts_add_handler(IRQ_PAGE_FAULT, page_fault_handler, TRAP_GATE);
     interrupts_add_handler(IRQ_SYSCALL, syscall_handler, INT_GATE_USER);
+}
 
-    __asm__("lidt %0" ::"m"(idt_descriptor));
+void interrupts_load()
+{
+    // Disbale PIC
+    outb(0xA1, 0xFF);
+    outb(0x21, 0xFF);
+
+    __asm__ volatile("lidt %0" ::"m"(idt_descriptor));
+    __asm__ volatile("sti");
 }
 
 void interrupts_add_handler(uint8_t handler_index, void *handler, uint8_t flags)
@@ -67,21 +76,19 @@ void interrupts_add_handler(uint8_t handler_index, void *handler, uint8_t flags)
     idt_entries[handler_index].selector = 0x08;
 }
 
+// Exceptions
 __attribute__((interrupt)) void default_interrupt_handler(InterruptFrame *frame)
 {
     vga_setcolor(VGA_COLOR_RED);
     vga_printf("[Exception] Exception occured\n");
     vga_restore_color();
-
-    __asm__("hlt");
 }
 
 __attribute__((interrupt)) void default_interrupt_handler_errcode(InterruptFrame *frame, uint64_t error_code)
 {
     vga_setcolor(VGA_COLOR_RED);
-    vga_printf("[Exception] Exception occured :(%d)\n", (int)error_code);
+    vga_printf("[Exception] Exception occured :(%d)\n", (int16_t)error_code);
     vga_restore_color();
-
     __asm__("hlt");
 }
 
@@ -107,5 +114,14 @@ __attribute__((interrupt)) void syscall_handler(InterruptFrame *frame)
 {
     register int syscall_index __asm__("eax");
     handle_syscall(syscall_index);
+    frame->ip++;
+}
+
+__attribute__((interrupt)) void pic_handler(InterruptFrame *frame)
+{
+    vga_setcolor(VGA_COLOR_GREEN);
+    vga_printf("[Exception] PIC handler\n");
+    vga_restore_color();
+
     frame->ip++;
 }

@@ -3,10 +3,10 @@
 #include <gfx/vga.h>
 #include <gfx/vga_colors.h>
 
-volatile void syscall(int syscall_index)
+void syscall(int syscall_index)
 {
-    __asm__("mov eax, %0" ::"a"(syscall_index));
-    __asm__("int 0x80");
+    __asm__ volatile("mov eax, %0" ::"a"(syscall_index));
+    __asm__ volatile("int 0x80");
 }
 
 void handle_syscall(int syscall_index)

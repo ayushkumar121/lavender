@@ -73,7 +73,7 @@ __attribute__((format(printf, 2, 3))) void serial_printf(const uint16_t port, co
     va_list args;
     va_start(args, fmt);
 
-    SString ss = ss_printf(fmt, args);
+    SString ss = ss_vprintf(fmt, args);
     serial_puts(port, ss.data);
 
     va_end(args);
