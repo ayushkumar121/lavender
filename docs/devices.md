@@ -1,6 +1,5 @@
 # Devices
 
-
 ## Programmable interrupt controller  (PIC)
 
 PIC controls the various hardware interrupt fired 
@@ -18,13 +17,10 @@ Primary ATA ------> |            |   Floppy disk -------> |            |
 Secondary ATA ----> |____________|   Parallel Port 1----> |____________|
 ```
 
-### Disbaling PIC 
-
-```asm
-mov al, 0xFF                 
-out 0xA1, al
-out 0x21, al
-```
-
-
 ## Advanced Programmable Interrupt Controller (APIC)
+
+
+## Serial
+
+Most modern computers have a serial interface to communicate with devices such as USB,
+serial is a port mapped I/O  that means you need to send some data to send some specific ports

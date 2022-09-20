@@ -1,3 +1,10 @@
+# Docs
+
+- [[booting]]
+- [[cpu_modes]]
+- [[devices]]
+- [[multitasking]]
+
 # TODO
 
 - [x] PIC/Keyboard Input
@@ -7,3 +14,4 @@
 - [ ] Dynamic memory/Heap allocation
 - [ ] Multitasking/Processes
 - [ ] GPU support
+- [ ] UEFI
