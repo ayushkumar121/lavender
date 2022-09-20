@@ -3,8 +3,6 @@
 #include <gfx/vga.h>
 #include <gfx/vga_colors.h>
 
-#include <dev/serial.h>
-
 #include <sys/syscalls.h>
 
 typedef struct __attribute__((packed))
@@ -24,18 +22,60 @@ typedef struct __attribute__((packed))
     uint64_t offset;
 } IdtDescriptor;
 
-// defined in BSS section
+// Defined in BSS section
 extern IdtEntry idt_entries[256];
-static IdtDescriptor idt_descriptor;
+
+static IdtDescriptor idt_descriptor = {
+    .size = sizeof(IdtEntry) * 256 - 1,
+    .offset = (uint64_t)&idt_entries,
+};
+
+
+// Exceptions
+__attribute__((interrupt)) static void default_interrupt_handler(InterruptFrame *frame)
+{
+    vga_setcolor(VGA_COLOR_RED);
+    vga_printf("[Exception] Exception occured\n");
+    vga_restore_color();
+    __asm__("hlt");
+}
+
+__attribute__((interrupt)) static void default_interrupt_handler_errcode(InterruptFrame *frame, uint64_t error_code)
+{
+    vga_setcolor(VGA_COLOR_RED);
+    vga_printf("[Exception] Exception occured :(%d)\n", (int16_t)error_code);
+    vga_restore_color();
+    __asm__("hlt");
+}
+
+__attribute__((interrupt)) static void divide_by_zero_handler(InterruptFrame *frame)
+{
+    vga_setcolor(VGA_COLOR_RED);
+    vga_printf("[Exception] Divide by zero\n");
+    vga_restore_color();
+
+    frame->ip++;
+}
+
+__attribute__((interrupt)) static void page_fault_handler(InterruptFrame *frame, uint64_t error_code)
+{
+    vga_setcolor(VGA_COLOR_RED);
+    vga_printf("[Exception] Page fault\n");
+    vga_restore_color();
+
+    __asm__("hlt");
+}
+
+// Syscalls
+__attribute__((interrupt)) void syscall_handler(InterruptFrame *frame)
+{
+    register int syscall_index __asm__("eax");
+    handle_syscall(syscall_index);
+    frame->ip++;
+}
 
 void interrupts_init()
 {
-    uint16_t idt_size = sizeof(IdtEntry) * 256;
-
-    // Setting up the descriptor table
-    idt_descriptor.size = idt_size - 1;
-    idt_descriptor.offset = (uint64_t)&idt_entries;
-
     for (size_t i = 0; i < 256; ++i)
     {
         if (i == 8 || (i > 9 && i < 15) || i == 17 || i == 21 || i == 29 || i == 30)
@@ -69,47 +109,4 @@ void interrupts_add_handler(uint8_t handler_index, void *handler, uint8_t flags)
     idt_entries[handler_index].type_attributes = flags;
     idt_entries[handler_index].ist = 0;
     idt_entries[handler_index].selector = 0x08;
-}
-
-// Exceptions
-__attribute__((interrupt)) void default_interrupt_handler(InterruptFrame *frame)
-{
-    vga_setcolor(VGA_COLOR_RED);
-    vga_printf("[Exception] Exception occured\n");
-    vga_restore_color();
-    __asm__("hlt");
-}
-
-__attribute__((interrupt)) void default_interrupt_handler_errcode(InterruptFrame *frame, uint64_t error_code)
-{
-    vga_setcolor(VGA_COLOR_RED);
-    vga_printf("[Exception] Exception occured :(%d)\n", (int16_t)error_code);
-    vga_restore_color();
-    __asm__("hlt");
-}
-
-__attribute__((interrupt)) void divide_by_zero_handler(InterruptFrame *frame)
-{
-    vga_setcolor(VGA_COLOR_RED);
-    vga_printf("[Exception] Divide by zero\n");
-    vga_restore_color();
-
-    frame->ip++;
-}
-
-__attribute__((interrupt)) void page_fault_handler(InterruptFrame *frame, uint64_t error_code)
-{
-    vga_setcolor(VGA_COLOR_RED);
-    vga_printf("[Exception] Page fault\n");
-    vga_restore_color();
-
-    __asm__("hlt");
-}
-
-// Syscalls
-__attribute__((interrupt)) void syscall_handler(InterruptFrame *frame)
-{
-    register int syscall_index __asm__("eax");
-    handle_syscall(syscall_index);
-    frame->ip++;
 }

@@ -55,26 +55,13 @@ void kernel_main()
     }
 }
 
-#define TIMER_INT_INDEX PIC_1_OFFSET
-
-__attribute__((interrupt)) void timer_handler(InterruptFrame *frame)
-{
-    // vga_printf(".");
-    pic_eoi(TIMER_INT_INDEX);
-}
-
 void _start()
 {
-    vga_init();
     serial_init(COM1);
-
+    
     interrupts_init();
     pic_init();
-
-    // Register interupts
-    interrupts_add_handler(TIMER_INT_INDEX, timer_handler, INT_GATE);
     keyboard_init();
-
     interrupts_load();
 
     kernel_main();

@@ -26,10 +26,3 @@ typedef struct __attribute__((packed))
 void interrupts_init();
 void interrupts_load();
 void interrupts_add_handler(uint8_t handler_index, void *handler, uint8_t flags);
-
-// IRQs
-__attribute__((interrupt)) void default_interrupt_handler(InterruptFrame *frame);
-__attribute__((interrupt)) void default_interrupt_handler_errcode(InterruptFrame *frame, uint64_t error_code);
-__attribute__((interrupt)) void divide_by_zero_handler(InterruptFrame *frame);
-__attribute__((interrupt)) void page_fault_handler(InterruptFrame *frame, uint64_t error_code);
-__attribute__((interrupt)) void syscall_handler(InterruptFrame *frame);

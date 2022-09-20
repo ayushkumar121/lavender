@@ -17,10 +17,6 @@ enum SerialStatus
     SERIAL_FAILED,
 };
 
-// General harware bound 
-void outb(uint16_t port, uint8_t byte);
-uint8_t inb(uint16_t port);
-
 // Iniitilaize com port I/O
 int serial_init(const uint16_t port);
 __attribute__((format(printf, 2, 3))) void serial_printf(const uint16_t port, const char *fmt, ...);

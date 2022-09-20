@@ -12,7 +12,7 @@ DEPS   := $(shell find $(IDIR) -name "*.h")
 SFILES := $(shell find $(SDIR) -name "*.c")
 OBJ=$(patsubst $(SDIR)/%.c, $(ODIR)/%.o, $(SFILES))
 
-CFLAGS=-std=gnu17 -Wall -nostdlib -fno-stack-protector -ffreestanding -m64 -masm=intel -mgeneral-regs-only -I$(IDIR)
+CFLAGS=-std=gnu17 -Wall -Wextra -nostdlib -fno-stack-protector -ffreestanding -m64 -masm=intel -mgeneral-regs-only -I$(IDIR)
 
 $(shell mkdir -p $(DIRS))
 

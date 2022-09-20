@@ -2,79 +2,80 @@
 
 #include <dev/interrupts.h>
 #include <dev/pic.h>
+#include <dev/ports.h>
 #include <dev/serial.h>
 
 #include <gfx/vga.h>
+#include <lib/mutex.h>
 
 #define KEYBOARD_INT_INDEX (PIC_1_OFFSET + 1)
 
-static char keymap[0xff];
-
-// TODO: add mutex here
-static char key = 0;
-static char key_event = 0;
-
-static void keymap_init()
+typedef struct
 {
-    keymap[0x1e] = 'a';
-    keymap[0x1f] = 's';
-    keymap[0x20] = 'd';
-    keymap[0x21] = 'f';
-    keymap[0x22] = 'g';
-    keymap[0x23] = 'h';
-    keymap[0x24] = 'j';
-    keymap[0x25] = 'k';
-    keymap[0x26] = 'l';
-    keymap[0x10] = 'q';
-    keymap[0x11] = 'w';
-    keymap[0x12] = 'e';
-    keymap[0x13] = 'r';
-    keymap[0x14] = 't';
-    keymap[0x15] = 'y';
-    keymap[0x16] = 'u';
-    keymap[0x17] = 'i';
-    keymap[0x18] = 'o';
-    keymap[0x19] = 'p';
-    keymap[0x2c] = 'z';
-    keymap[0x2d] = 'x';
-    keymap[0x2e] = 'c';
-    keymap[0x2f] = 'v';
-    keymap[0x30] = 'b';
-    keymap[0x31] = 'n';
-    keymap[0x32] = 'm';
-    keymap[0x39] = ' ';
-    keymap[0x04] = '3';
-    keymap[0x08] = '7';
-    keymap[0x02] = '1';
-    keymap[0x06] = '5';
-    keymap[0x0A] = '9';
-    keymap[0x03] = '2';
-    keymap[0x0B] = '0';
-    keymap[0x07] = '6';
-    keymap[0x05] = '4';
-    keymap[0x09] = '8';
+    char key;
+    char key_event;
 
-    keymap[0x02] = '1';
-    keymap[0x03] = '2';
-    keymap[0x04] = '3';
-    keymap[0x05] = '4';
-    keymap[0x06] = '5';
-    keymap[0x07] = '6';
-    keymap[0x08] = '7';
-    keymap[0x09] = '8';
-    keymap[0x0a] = '9';
-    keymap[0x0b] = '0';
+    uint32_t mutex_lock;
+} Keyboard;
 
-    keymap[0x1c] = '\n';
-    keymap[0x0E] = '\b';
-}
+static const char keymap[0xff] = {
+    [0x1e] = 'a',
+    [0x1f] = 's',
+    [0x20] = 'd',
+    [0x21] = 'f',
+    [0x22] = 'g',
+    [0x23] = 'h',
+    [0x24] = 'j',
+    [0x25] = 'k',
+    [0x26] = 'l',
+    [0x10] = 'q',
+    [0x11] = 'w',
+    [0x12] = 'e',
+    [0x13] = 'r',
+    [0x14] = 't',
+    [0x15] = 'y',
+    [0x16] = 'u',
+    [0x17] = 'i',
+    [0x18] = 'o',
+    [0x19] = 'p',
+    [0x2c] = 'z',
+    [0x2d] = 'x',
+    [0x2e] = 'c',
+    [0x2f] = 'v',
+    [0x30] = 'b',
+    [0x31] = 'n',
+    [0x32] = 'm',
+    [0x39] = ' ',
+    [0x33] = ',',
+    [0x37] = '*',
+    [0x02] = '1',
+    [0x03] = '2',
+    [0x04] = '3',
+    [0x05] = '4',
+    [0x06] = '5',
+    [0x07] = '6',
+    [0x08] = '7',
+    [0x09] = '8',
+    [0x0A] = '9',
+    [0x0B] = '0',
+    [0x1C] = '\n',
+    [0x0E] = '\b',
+};
+
+static Keyboard keyboard = {
+    .key = 0,
+    .key_event = 0,
+    .mutex_lock = MUTEX_UNLOCKED,
+};
 
 __attribute__((interrupt)) static void keyboard_handler(InterruptFrame *frame)
 {
     char scancode = inb(0x60);
 
-    key = scancode & ~(1 << 7);
-    key_event = scancode & (1 << 7);
+    spin_lock(&keyboard.mutex_lock);
+    keyboard.key = scancode & ~(1 << 7);
+    keyboard.key_event = scancode & (1 << 7);
+    spin_unlock(&keyboard.mutex_lock);
 
     pic_eoi(KEYBOARD_INT_INDEX);
 }
@@ -82,17 +83,19 @@ __attribute__((interrupt)) static void keyboard_handler(InterruptFrame *frame)
 char keyboard_getch(int event)
 {
     int result = 0;
-    while (key == 0 || key_event != event)
+
+    while (keyboard.key == 0 || keyboard.key_event != event)
         ;
 
-    result = key;
-    key = 0;
+    spin_lock(&keyboard.mutex_lock);
+    result = keyboard.key;
+    keyboard.key = 0;
+    spin_unlock(&keyboard.mutex_lock);
 
     return keymap[result];
 }
 
 void keyboard_init()
 {
-    keymap_init();
     interrupts_add_handler(KEYBOARD_INT_INDEX, keyboard_handler, INT_GATE);
 }
