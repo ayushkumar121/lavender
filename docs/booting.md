@@ -7,5 +7,5 @@ for BIOS you need to preapre a 512 bytes flat binary and load your kernel or fur
 
 ## UEFI
 
-It provides some simple abstractions for modern hardware and fetches the required data for you such as Memory maps etc
-
+It provides some simple abstractions for modern hardware and fetches the required data for you such as Memory maps etc.
+To setup basic `uefi` application setup you can find here https://wiki.osdev.org/UEFI_Bare_Bones

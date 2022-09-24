@@ -17,6 +17,12 @@ enum SerialStatus
     SERIAL_FAILED,
 };
 
-// Iniitilaize com port I/O
+// TODO: We need a mutex lock of all ports / serial devices
+// something like
+
+// COM1: Writing
+// COM2: Awailable
+// ...
+
 int serial_init(const uint16_t port);
 __attribute__((format(printf, 2, 3))) void serial_printf(const uint16_t port, const char *fmt, ...);

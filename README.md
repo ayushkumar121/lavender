@@ -16,5 +16,3 @@ OS inspired by microservice architecture of web
 
 - Paging
     - https://intermezzos.github.io/book/first-edition/paging.html 
-
-` -d int -no-reboot -no-shutdown`

@@ -20,7 +20,6 @@
 
 __attribute__((interrupt)) static void timer_handler(InterruptFrame *frame)
 {
-    // serial_printf(COM1, ".");
     pic_eoi(TIMER_INT_INDEX);
 }
 
