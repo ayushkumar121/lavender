@@ -83,6 +83,7 @@ inline static void test_keyboard()
         vga_printf("%c", ch);
     }
 }
+
 void kernel_main()
 {
     // test_serial();
