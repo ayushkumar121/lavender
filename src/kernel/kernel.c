@@ -44,7 +44,7 @@ inline static void test_cpu()
 
 inline static void test_alloc()
 {
-    vga_printf("\nTesting Heap Allocation\n\n");
+    vga_printf("\nTesting Temp Allocation\n\n");
 
     char *a = (char *)temp_alloc(10);
     memcpy(a, "Ayush", 6);
@@ -55,38 +55,55 @@ inline static void test_alloc()
 
     char *c = (char *)temp_alloc(21);
     char *d = (char *)temp_alloc(8);
-    vga_printf("Alignment check  %x\n", d);
+    vga_printf("Alignment check %x, %x\n", c, d);
 
     temp_rollback(a);
 
-    *a = (char *)temp_alloc(8);
+    a = (char *)temp_alloc(8);
     vga_printf("Heap start after free %x\n", a);
     temp_rollback(a);
+
+    vga_printf("\nTesting Linked List Allocation\n");
+
+    a = (char *)alloc(100);
+    free(a, 100);
+    b = (char *)alloc(150);
+    c = (char *)alloc(20);
+    free(b, 150);
+    d = (char *)alloc(10);
+
+    vga_printf("\n A=%x\n B=%x\n C=%x\n D=%x\n", a, b, c, d);
 }
 
-void kernel_main()
+inline static void test_keyboard()
 {
-    test_serial();
-    test_exceptions();
-    test_sycall();
-    test_cpu();
-    test_alloc();
-
     while (true)
     {
         char ch = keyboard_getch(KEY_EVENT_PRESSED);
         vga_printf("%c", ch);
     }
 }
+void kernel_main()
+{
+    // test_serial();
+    // test_exceptions();
+    // test_sycall();
+    // test_cpu();
+    test_alloc();
+    test_keyboard();
+}
 
 void _start()
 {
     serial_init(COM1);
-
     interrupts_init();
-    pic_init();
-    keyboard_init();
+    // Load drivers that adds their own interrupt handler
+    {
+        pic_init();
+        keyboard_init();
+    }
     interrupts_load();
+    alloc_init();
 
     kernel_main();
 }
