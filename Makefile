@@ -5,7 +5,7 @@ ODIR=bin
 CC=gcc
 
 DIRS=$(ODIR) $(ODIR)/x86 $(ODIR)/kernel $(ODIR)/kernel \
-	$(ODIR)/arch/x86/interrupts $(ODIR)/arch/x86/dev $(ODIR)/arch/x86/gfx $(ODIR)/arch/x86/lib $(ODIR)/arch/x86/sys
+	$(ODIR)/arch/x86/dev $(ODIR)/arch/x86/gfx $(ODIR)/arch/x86/lib $(ODIR)/arch/x86/sys
 
 
 DEPS   := $(shell find $(IDIR) -name "*.h")
