@@ -12,11 +12,6 @@
 
 #include <lib/utils.h>
 
-inline static void test_vga()
-{
-    vga_printf("VGA text mode: %d\n", 101);
-}
-
 inline static void test_serial()
 {
     serial_printf(COM1, "Testing serial: %d\n", 101);
@@ -24,6 +19,8 @@ inline static void test_serial()
 
 inline static void test_exceptions()
 {
+    vga_printf("\nTesting Exceptions\n\n");
+
     int c = 1 / 0;
     vga_printf("Returned from exception\n");
 }
@@ -36,6 +33,8 @@ inline static void test_sycall()
 
 inline static void test_cpu()
 {
+    vga_printf("\nQuering CPU info\n\n");
+
     char vendor_id[13];
     cpuid_model(vendor_id);
 
@@ -45,27 +44,30 @@ inline static void test_cpu()
 
 inline static void test_alloc()
 {
-    vga_printf("Testing Heap Allocation\n\n");
+    vga_printf("\nTesting Heap Allocation\n\n");
     
     char *a = (char *)heap_alloc(10);
     memcpy(a, "Ayush", 6);
-    vga_printf("[OK] Allocating \"%s\"\n", a);
+    vga_printf("Allocating \"%s\"\n", a);
 
     char *b = (char *)heap_alloc(1 << 20);
-    vga_printf("[OK] Null pointer on large allocation %x\n", b);
+    vga_printf("Null pointer on large allocation %x\n", b);
 
     char *c = (char *)heap_alloc(21);
-    vga_printf("[OK] %x\n", c);
-    heap_free(c);
-
     char *d = (char *)heap_alloc(8);
-    vga_printf("[OK] Alignment check  %x\n", d);
+    vga_printf("Alignment check  %x\n", d);
+
+    heap_free(a);
+    heap_free(b);
+    heap_free(c);
     heap_free(d);
+
+    *a = (char *)heap_alloc(8);
+    vga_printf("Heap start after free %x\n", a);
 }
 
 void kernel_main()
 {
-    test_vga();
     test_serial();
     test_exceptions();
     test_sycall();

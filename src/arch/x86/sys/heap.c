@@ -1,9 +1,6 @@
 #include <sys/heap.h>
 #include <lib/mutex.h>
 
-#include <gfx/vga.h>
-#include <gfx/vga_colors.h>
-
 typedef struct
 {
     size_t heap_start;
@@ -50,21 +47,12 @@ void *heap_alloc(size_t size)
     allocator.allocations++;
     spin_unlock(&allocator.mutex_lock);
 
-    vga_setcolor(VGA_COLOR_CYAN);
-    vga_printf("[ALLOCATOR] Allocating ... %d\n", size);
-    vga_restore_color();
-
     return (void *)alloc_start;
 }
 
 /* frees the entire heap if everything is deallocated */
 void heap_free(void *ptr)
 {
-    vga_setcolor(VGA_COLOR_CYAN);
-    vga_printf("[ALLOCATOR] Deallocating ... %x\n", (size_t)ptr);
-    vga_restore_color();
-
-
     spin_lock(&allocator.mutex_lock);
     allocator.allocations--;
     if (allocator.allocations == 0)
