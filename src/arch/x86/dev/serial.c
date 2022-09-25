@@ -53,7 +53,7 @@ int serial_init(const uint16_t port)
 }
 
 // TODO: add mutex here as well
-__attribute__((format(printf, 2, 3))) void serial_printf(const uint16_t port, const char *fmt, ...)
+void serial_printf(const uint16_t port, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);

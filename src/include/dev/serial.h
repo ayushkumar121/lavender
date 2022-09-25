@@ -25,4 +25,4 @@ enum SerialStatus
 // ...
 
 int serial_init(const uint16_t port);
-__attribute__((format(printf, 2, 3))) void serial_printf(const uint16_t port, const char *fmt, ...);
+void serial_printf(const uint16_t port, const char *fmt, ...);

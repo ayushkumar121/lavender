@@ -73,18 +73,7 @@ SString ss_vprintf(const char *fmt, va_list args)
             case 'd':
             {
                 SString ss = {0};
-                int32_t num = va_arg(args, int32_t);
-                itoa(num, ss.data, 10);
-
-                result = ss_cat(result, ss);
-                k += ss_len(ss);
-            }
-            break;
-
-            case 'l':
-            {
-                SString ss = {0};
-                int64_t num = va_arg(args, int64_t);
+                int64_t num = va_arg(args, int32_t);
                 itoa(num, ss.data, 10);
 
                 result = ss_cat(result, ss);
@@ -135,7 +124,7 @@ SString ss_vprintf(const char *fmt, va_list args)
     return result;
 }
 
-__attribute__((format(printf, 1, 2))) SString ss_printf(const char *fmt, ...)
+SString ss_printf(const char *fmt, ...)
 {
     SString result = {0};
 

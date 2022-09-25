@@ -55,11 +55,24 @@ void itoa(int64_t value, char *buf, int base)
 
 void *memset(void *s, int c, size_t n)
 {
-    int *buf = (int *)s;
+    char *buf = (char *)s;
     for (size_t i = 0; i < n; ++i)
     {
         buf[i] = c;
     }
 
     return s;
+}
+
+void *memcpy(void *d, void *s, size_t n)
+{
+    char *dst = (char *)d;
+    char *src = (char *)s;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        dst[i] = src[i];
+    }
+
+    return d;
 }

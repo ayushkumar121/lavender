@@ -15,4 +15,4 @@ SString ss_from_cstr(const char *a);
 SString ss_cat(SString a, SString b);
 
 SString ss_vprintf(const char *fmt, va_list args);
-__attribute__((format(printf, 1, 2))) SString ss_printf(const char *fmt, ...);
+SString ss_printf(const char *fmt, ...);
