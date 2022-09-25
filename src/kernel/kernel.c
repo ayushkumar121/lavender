@@ -45,25 +45,23 @@ inline static void test_cpu()
 inline static void test_alloc()
 {
     vga_printf("\nTesting Heap Allocation\n\n");
-    
-    char *a = (char *)heap_alloc(10);
+
+    char *a = (char *)temp_alloc(10);
     memcpy(a, "Ayush", 6);
     vga_printf("Allocating \"%s\"\n", a);
 
-    char *b = (char *)heap_alloc(1 << 20);
+    char *b = (char *)temp_alloc(1 << 20);
     vga_printf("Null pointer on large allocation %x\n", b);
 
-    char *c = (char *)heap_alloc(21);
-    char *d = (char *)heap_alloc(8);
+    char *c = (char *)temp_alloc(21);
+    char *d = (char *)temp_alloc(8);
     vga_printf("Alignment check  %x\n", d);
 
-    heap_free(a);
-    heap_free(b);
-    heap_free(c);
-    heap_free(d);
+    temp_rollback(a);
 
-    *a = (char *)heap_alloc(8);
+    *a = (char *)temp_alloc(8);
     vga_printf("Heap start after free %x\n", a);
+    temp_rollback(a);
 }
 
 void kernel_main()
