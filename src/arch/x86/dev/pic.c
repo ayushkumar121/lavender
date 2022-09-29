@@ -16,13 +16,6 @@
 #define CMD_MODE_8086 0x01
 #define CMD_END_OF_INTERRUPT 0x20
 
-#define TIMER_INT_INDEX PIC_1_OFFSET
-
-__attribute__((interrupt)) static void timer_handler(InterruptFrame *frame)
-{
-    pic_eoi(TIMER_INT_INDEX);
-}
-
 // "Allegedly" writing to 0x80 takes long enough to make everything work on most hardware.
 void wait()
 {
@@ -62,8 +55,6 @@ void pic_init()
 
     outb(PIC1_DATA, a1); // restore saved masks.
     outb(PIC2_DATA, a2);
-
-    interrupts_add_handler(TIMER_INT_INDEX, timer_handler, INT_GATE);
 }
 
 // Notify the interrupt has been processed

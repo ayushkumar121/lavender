@@ -7,10 +7,34 @@
 #include <dev/pic.h>
 #include <dev/keyboard.h>
 
-#include <sys/syscalls.h>
 #include <sys/heap.h>
+#include <sys/syscalls.h>
+#include <sys/scheduler.h>
 
 #include <lib/utils.h>
+
+int root()
+{
+    serial_printf(COM1, "Root Task\n");
+    scheduler_taskwait();
+
+    return 0;
+}
+
+int task_01()
+{
+    serial_printf(COM1, "Task 01\n");
+    scheduler_taskwait();
+
+    return 0;
+}
+
+int task_02()
+{
+    serial_printf(COM1, "Task 02\n");
+    scheduler_taskwait();
+    return 0;
+}
 
 inline static void test_serial()
 {
@@ -84,14 +108,22 @@ inline static void test_keyboard()
     }
 }
 
+inline static void test_scheduler()
+{
+    scheduler_addtask(root);
+    scheduler_addtask(task_01);
+    scheduler_addtask(task_02);
+}
+
 void kernel_main()
 {
     // test_serial();
     // test_exceptions();
     // test_sycall();
     // test_cpu();
-    test_alloc();
-    test_keyboard();
+    // test_alloc();
+    // test_keyboard();
+    test_scheduler();
 }
 
 void _start()
@@ -102,6 +134,7 @@ void _start()
     {
         pic_init();
         keyboard_init();
+        scheduler_init();
     }
     interrupts_load();
     alloc_init();

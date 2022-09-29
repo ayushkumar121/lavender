@@ -8,8 +8,6 @@
 #include <gfx/vga.h>
 #include <lib/mutex.h>
 
-#define KEYBOARD_INT_INDEX (PIC_1_OFFSET + 1)
-
 typedef struct
 {
     char key;

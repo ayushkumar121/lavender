@@ -2,7 +2,7 @@
 
 #include <lib/types.h>
 
-#define NULL (void*)0
+#define NULL (void *)0
 
 /* Temp allocator */
 /*
@@ -14,7 +14,7 @@ void temp_rollback(void *ptr);
 
 /* Linked List allocator */
 /*
-    This alloactor should be used for large allocations 
+    This alloactor should be used for large allocations
     that you free on arbitray order
 
     This creates a lot of heap fragmentation and lookup time is also high
