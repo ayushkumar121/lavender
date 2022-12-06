@@ -42,6 +42,8 @@ communication model at kernel level}
 	\newline
 	\textbf{Dr. Prabhat Verma}
 	
+	\addcontentsline{toc}{chapter}{Certificate}
+
 	\chapter*{Abstract}
 	
 	Inter process communication (IPC) protocols must be provided by multitasking systems 
@@ -59,9 +61,8 @@ communication model at kernel level}
 	We believe that each of those problems can be resolved by a kernel level 
 	publisher subscriber model.
 
-	\addcontentsline{toc}{chapter}{\protect\numberline{}Certificate}
-	\addcontentsline{toc}{chapter}{\protect\numberline{}Abstract}
-	\addcontentsline{toc}{chapter}{\protect\numberline{}Bibliography}
+	
+	\addcontentsline{toc}{chapter}{Abstract}
 	\tableofcontents
 	
 
@@ -78,7 +79,7 @@ communication model at kernel level}
 	
 	\section{Why publisher-subscriber pattern ?}
 	
-	TODO:
+	\textbf{TODO:}
 	
 	\section{IPC Model}
 	\begin{enumerate}
@@ -169,41 +170,77 @@ communication model at kernel level}
 	In order to avoid linking-related activities, we have chosen to employ dummy programmes that 
 	our kernel would interpret.
 	
+	\subsection{Program}
+	A program for our kernel will be a static list of instructions with a fix length
+	that will be interpeted instruction by instruction
+	
 	\begin{verbatim}
-		Text enclosed inside \texttt{verbatim} environment 
-		is printed directly 
-		and all \LaTeX{} commands are ignored.
+	typedef struct Program {
+    	int data[MAX_PROGRAM_LEN];
+    	int len;
+    	int ip;
+	} Program;
 	\end{verbatim}
+	
+	data will contain instructions for interpretation as well as any input for those instructions
+	\textit{ip} will contain an index that points to the next instruction.
+	
+	\subsection{Process management}
+	The state of the process manager is kept behind a mutex so we don't get into a situation
+	where our scheduler updates the state while we're executing our processes.
+	
+	\begin{verbatim}
+	typedef struct
+	{
+		int current_pid;
+		uint32_t mutex_lock;
+	} ProcessState;
 
+	static Program processes[256];
+	static int pid_count = 0;
+
+	static ProcessState state = {
+   	    .current_pid = -1,
+   	    .mutex_lock = MUTEX_UNLOCKED,
+	};
+	\end{verbatim}
 	
+	The scheduler will simply run in an infinite loop run the currently active task
+	move the instruction pointer for the current task to the next instruction and wait for
+	a certain amount of time to make sure all processes get equal amount of executuion time.
 	
+	A CPU timer interrupt will periodically give control back to the kernel from the
+	scheduler and we move to the next available task.
+	
+	\chapter{Work remaining}
+	
+	\pagebreak
 	\begin{thebibliography}{9}
-	
 	\bibitem{citation01}
 		S. L. Mirtaheri, E. M. Khaneghah and M. Sharifi, 
-		"A Case for Kernel Level Implementation of Inter Process Communication Mechanisms," 
+		''A Case for Kernel Level Implementation of Inter Process Communication Mechanisms,'' 
 		2008 3rd International Conference on Information and Communication Technologies: From Theory to Applications, 
 		2008, pp. 1-7, doi: 10.1109/ICTTA.2008.4530360.
 	
 	\bibitem{citation02}
 		R. Rajkumar, M. Gagliardi and Lui Sha, 
-		"The real-time publisher/subscriber inter-process communication model for distributed real-time systems: design and implementation," 
+		''The real-time publisher/subscriber inter-process communication model for distributed real-time systems: design and implementation,'' 
 		Proceedings Real-Time Technology and Applications Symposium, 
 		1995, pp. 66-75, doi: 10.1109/RTTAS.1995.516203. 
 
 	\bibitem{citation03}
 		David Herrmann
-		"Bus IPC", https://lists.linuxfoundation.org/pipermail/ksummit-discuss/2016-July/003047.html
+		''Bus IPC'', https://lists.linuxfoundation.org/pipermail/ksummit-discuss/2016-July/003047.html
 		2016
 		
 	\bibitem{citation04}
 		Jochen Liedtke. 1993. 
-		Improving IPC by kernel design. In Proceedings of the fourteenth ACM symposium on Operating systems principles (SOSP '93). 
-		Association for Computing Machinery, 
+		''Improving IPC by kernel design. In Proceedings of the fourteenth ACM symposium on Operating systems principles (SOSP '93). 
+		Association for Computing Machinery'', 
 		New York, NY, USA, 175–188. 
 		https://doi.org/10.1145/168619.168633
 
 	\end{thebibliography}
+	\addcontentsline{toc}{chapter}{Bibliography}
 
-    
 \end{document}

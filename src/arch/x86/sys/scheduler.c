@@ -9,15 +9,15 @@
 #include <lib/mutex.h>
 
 #define SCHEDULER_INT_INDEX 0x81
-
-static Program processes[256];
-static int pid_count = 0;
-
 typedef struct
 {
     int current_pid;
     uint32_t mutex_lock;
 } ProcessState;
+
+
+static Program processes[256];
+static int pid_count = 0;
 
 static ProcessState state = {
    .current_pid = -1,
@@ -26,7 +26,7 @@ static ProcessState state = {
 
 void dirty_sleep()
 {
-    for(int i=0; i<10000000;i++) 
+    for(int i=0; i<16680000;i++) 
     {
         __asm("nop;");
     }
