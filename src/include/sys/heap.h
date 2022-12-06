@@ -2,8 +2,6 @@
 
 #include <lib/types.h>
 
-#define NULL (void *)0
-
 /* Temp allocator */
 /*
     This uses bump allocator to allocator to temporaly allocate memory

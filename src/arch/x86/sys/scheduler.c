@@ -2,102 +2,83 @@
 
 #include <dev/pic.h>
 #include <dev/interrupts.h>
+#include <dev/serial.h>
 
 #include <gfx/vga.h>
+#include <lib/types.h>
+#include <lib/mutex.h>
 
 #define SCHEDULER_INT_INDEX 0x81
 
+static Program processes[256];
+static int pid_count = 0;
+
 typedef struct
 {
-    // Task task;
-    InterruptFrame frame;
-    /* any other options */
-} TaskState;
+    int current_pid;
+    uint32_t mutex_lock;
+} ProcessState;
 
-static TaskState tasks[256];
-static int pid_count = 0;
-static int current_pid = 0;
+static ProcessState state = {
+   .current_pid = -1,
+   .mutex_lock = MUTEX_UNLOCKED,
+};
 
-void save_state(InterruptFrame *frame, int pid)
+void dirty_sleep()
 {
-    vga_printf("Saving state for %d\n", pid);
-    tasks[pid].frame.cs = frame->cs;
-    tasks[pid].frame.ip = frame->ip;
-    tasks[pid].frame.sp = frame->sp;
-    tasks[pid].frame.ss = frame->ss;
-    tasks[pid].frame.flags = frame->flags;
+    for(int i=0; i<10000000;i++) 
+    {
+        __asm("nop;");
+    }
 }
-
-void load_state(InterruptFrame *frame, int pid)
-{
-    vga_printf("Loading state for %d\n", pid);
-    frame->cs = tasks[pid].frame.cs;
-    frame->ip = tasks[pid].frame.ip;
-    frame->sp = tasks[pid].frame.sp;
-    frame->ss = tasks[pid].frame.ss;
-    frame->flags = tasks[pid].frame.flags;
-}
-
-TaskState copy_state(InterruptFrame *frame)
-{
-    TaskState state;
-    state.frame.cs = frame->cs;
-    state.frame.ip = frame->ip;
-    state.frame.sp = frame->sp;
-    state.frame.ss = frame->ss;
-    state.frame.flags = frame->flags;
-
-    return state;
-}
-
 __attribute__((interrupt)) static void tick_handler(InterruptFrame *frame)
 {
-    // // /* Save current state */
-    // save_state(frame, current_pid);
-
-    // /* Advance the pid */
-    // current_pid++;
-
-    // /* Warp around to first task */
-    // if (current_pid >= pid_count)
-    // {
-    //     current_pid = 0;
-    // }
-
-    // /* Load next state this should be enough for the jump */
-    // load_state(frame, current_pid);
-
-    /* Jump to the next task */
+    if(pid_count > 0)
+    {
+        state.current_pid++;
+        
+        if (state.current_pid >= pid_count) 
+        {
+            state.current_pid= 0;
+        } 
+    } 
+    
     pic_eoi(TIMER_INT_INDEX);
-}
-
-__attribute__((interrupt)) static void schedule_handler(InterruptFrame *frame)
-{
-    current_pid = pid_count++;
-
-    TaskState state = copy_state(frame);
-    state.frame.ip = ++(frame->ip);
-    save_state(&state.frame, current_pid);
 }
 
 void scheduler_init()
 {
     interrupts_add_handler(TIMER_INT_INDEX, tick_handler, INT_GATE);
-    interrupts_add_handler(SCHEDULER_INT_INDEX, schedule_handler, INT_GATE);
 }
 
-void scheduler_taskwait()
+int scheduler_addtask(Program program)
 {
-    for (size_t i = 0; i < 200000; i++)
+    processes[pid_count++] = program;
+    return pid_count;
+}
+
+
+void scheduler_start()
+{
+    while(1) 
     {
-        __asm__("nop");
+        spin_lock(&state.mutex_lock);
+        if (state.current_pid > -1)
+        {
+            // we're locking on state so we don't interrupt don't update
+            // current pid mid running
+            Program *p = &processes[state.current_pid];
+        
+            // We can run program
+            if (p->ip < p->len)
+            {
+                vga_printf("Running process: %d\n", state.current_pid);
+                p->ip++;
+            }
+            
+        }
+        
+        dirty_sleep();
+        spin_unlock(&state.mutex_lock);
     }
-}
-
-int scheduler_addtask(Task task)
-{
-    __asm__ volatile("int 0x81");
-    task();
-
-    return pid_count + 1;
 }

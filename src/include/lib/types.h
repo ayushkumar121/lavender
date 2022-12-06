@@ -19,3 +19,5 @@ typedef enum
     false,
     true
 } Bool;
+
+#define NULL (void *)0

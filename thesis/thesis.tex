@@ -1,0 +1,209 @@
+\documentclass[12pt]{report}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+
+\title{
+{Implementation of publihser / subscriber inter process 
+communication model at kernel level}
+\newline
+
+{\large Harcourt Butler Technical University, Kanpur}
+\newline
+
+{\includegraphics{hbtu_logo.png}}
+}
+\author{
+	Ayush Kumar Shakya
+	\and
+	Arunima Verma
+	\and
+	Ashutosh Singh
+	\and
+	Hemant Singh
+}
+\date{\today}
+
+\begin{document}
+	\maketitle 
+	
+	\chapter*{Certificate}
+	
+	This is to certify that 
+	\textbf{Ayush Kumar Shakya} (Roll no. 190108017),
+	\textbf{Arunima Verma} (Roll no. 190108014),
+	\textbf{Ashutosh Singh} (Roll no. 190108015),
+	\textbf{Hemant Singh} (Roll no. 190108024),
+	students of INFORMATION TECHNOLOGY, Harcourt Butler Technical University, 
+	Kanpur are working on their project under my guidance.
+	They have a desire for learning and I wish success in their future project work.
+	
+	\vfill
+	\textit{Project guided by}
+	\newline
+	\textbf{Dr. Prabhat Verma}
+	
+	\chapter*{Abstract}
+	
+	Inter process communication (IPC) protocols must be provided by multitasking systems 
+	in order to allow communication between processes with varying levels of privilege. 
+	
+	These mechanisms may be implemented in user space or at the application level, 
+	however doing so at the application level has performance concerns because 
+	it must make numerous syscalls, which add a lot of overhead. IPC at the kernel level 
+	can decrease overheads and improve security. 
+	
+	Additionally, current kernel-based IPC models like Message Queues 
+	require coordination between processes in order to communicate, which might have 
+	overheads \cite{citation01} and prevent anonymous communication. 
+	
+	We believe that each of those problems can be resolved by a kernel level 
+	publisher subscriber model.
+
+	\addcontentsline{toc}{chapter}{\protect\numberline{}Certificate}
+	\addcontentsline{toc}{chapter}{\protect\numberline{}Abstract}
+	\addcontentsline{toc}{chapter}{\protect\numberline{}Bibliography}
+	\tableofcontents
+	
+
+	\chapter{Introduction}
+	In a modern system we have hundreds of processes running at any time and they mostly 
+	communicate using application level IPC mechanisms.
+	
+	The majority of the time, processes choose not to use any communication techniques 
+	and often build everything into a single programme, inflating the programmes 
+	into large monoliths that are challenging to debug.
+	
+	Software can be made more reliable and scalable, perhaps across several devices, 
+	if it is created as small microservices that utilise effective IPC mechanisms.
+	
+	\section{Why publisher-subscriber pattern ?}
+	
+	TODO:
+	
+	\section{IPC Model}
+	\begin{enumerate}
+		\item Publishing
+		\item Subscription
+		\item Notification
+	\end{enumerate}
+	
+	\section{Publishing}
+	Any process may send any number of messages on a particular \textbf{topic} or 
+	multiple topics, topics may be represented by an inteager.
+
+	some of the topics may be reserved for system use so programs listening to those
+	topics can be sure that no malicious program can messages on reserved topics.
+	
+	This may be implemented as a syscall at kernel level.
+				 	
+	\section{Subscription}
+	Processes can subscribe to one or more than one topics and register a callback
+	function to be called when they receive a notification.
+	kernel may store these processes in a hash table where \textit{key} is topic 
+	and \textit{value} is a linked list or process identifiers or PIDs.
+	This registration maybe implemnted as a syscall.c
+		
+	\section{Notification}
+	When a notification arrives on a particular topic, it is added to a queue,
+	and kernel dequeues topics one at a time and sends a copy of message to each 
+	process \cite{citation04}.
+	
+	We opted for copying for messages rather than shared memory because
+	modern CPUs are quite good at copying small data and having a copy rather than
+	shared resourse will help prevent any concurrency related issues such as deadlocks.	
+
+	\section{Cleanup}
+	When is process is no longer running it may be removed from the hash table
+	so if the same process identifer is assigned to some different process it 
+	doesn't receive messages it did not subscribe to.
+    
+	\chapter{Related Work}
+	\section{Apache Kafka}
+	Apacha Kafka is distributed event broker that provides publisher-subscriber 
+	IPC mechanism at large distributed scale.It more or less achives the functionality 
+	that we want to achive.
+	
+	It is built using Java and Scala and is JVM based therefore quite resourse intensive
+	and therefore not suitable for performance critical workloads.
+	
+	\section{D-Bus}
+	D-Bus or Desktop bus is a system bus that provides communication between processes
+	using a single system bus it aims to provide standarization communication for 
+	linux services.
+	
+	\subsection{Operating modes} 
+	\begin{enumerate}
+		\item Request response
+		\item Publish subscribe
+	\end{enumerate} 
+	
+	It implemented in user space and therefore cannot be used by kernel specially during
+	booting when it needs to stacrt multiple services and a dbus like functionality would
+	simplify and speed up the booting process.
+	
+	There proposals to add dbus like functionality at linux kernel level but nothing
+	concrete is merged yet\cite{citation03}.	
+	
+    \chapter{Progress Report}
+	
+	\section{Implementation}
+	
+	\subsection{Kernel}
+	To reduce project scope and resource availability, 
+	we have developed a 64 bit x86 kernel written in C and will concentrate 
+	on optimising our ipc mechanisms for x86 platform only.
+	
+	The kernel we developed includes a bootloader that loads the kernel and initializes virtual memory
+	as well switches to long mode (64 bit mode).
+	
+	Additionally, the kernel contains several utility functions for both the kernel and userspace programmes, 
+	as well as common data structures for heap allocation. 
+	
+	In addition, the kernel configures the hardware timer, keyboard, and other configurations for CPU interrupts 
+	from hardware and software.
+	
+	\subsection{Process Managment and Scheduler}
+	We plan to introduce a process managment and round robin scheduler
+	to our kernel.
+	
+	In order to avoid linking-related activities, we have chosen to employ dummy programmes that 
+	our kernel would interpret.
+	
+	\begin{verbatim}
+		Text enclosed inside \texttt{verbatim} environment 
+		is printed directly 
+		and all \LaTeX{} commands are ignored.
+	\end{verbatim}
+
+	
+	
+	\begin{thebibliography}{9}
+	
+	\bibitem{citation01}
+		S. L. Mirtaheri, E. M. Khaneghah and M. Sharifi, 
+		"A Case for Kernel Level Implementation of Inter Process Communication Mechanisms," 
+		2008 3rd International Conference on Information and Communication Technologies: From Theory to Applications, 
+		2008, pp. 1-7, doi: 10.1109/ICTTA.2008.4530360.
+	
+	\bibitem{citation02}
+		R. Rajkumar, M. Gagliardi and Lui Sha, 
+		"The real-time publisher/subscriber inter-process communication model for distributed real-time systems: design and implementation," 
+		Proceedings Real-Time Technology and Applications Symposium, 
+		1995, pp. 66-75, doi: 10.1109/RTTAS.1995.516203. 
+
+	\bibitem{citation03}
+		David Herrmann
+		"Bus IPC", https://lists.linuxfoundation.org/pipermail/ksummit-discuss/2016-July/003047.html
+		2016
+		
+	\bibitem{citation04}
+		Jochen Liedtke. 1993. 
+		Improving IPC by kernel design. In Proceedings of the fourteenth ACM symposium on Operating systems principles (SOSP '93). 
+		Association for Computing Machinery, 
+		New York, NY, USA, 175–188. 
+		https://doi.org/10.1145/168619.168633
+
+	\end{thebibliography}
+
+    
+\end{document}

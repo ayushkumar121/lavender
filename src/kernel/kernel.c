@@ -13,40 +13,9 @@
 
 #include <lib/utils.h>
 
-int root()
-{
-    serial_printf(COM1, "Root Task\n");
-    scheduler_taskwait();
-
-    return 0;
-}
-
-int task_01()
-{
-    serial_printf(COM1, "Task 01\n");
-    scheduler_taskwait();
-
-    return 0;
-}
-
-int task_02()
-{
-    serial_printf(COM1, "Task 02\n");
-    scheduler_taskwait();
-    return 0;
-}
-
 inline static void test_serial()
 {
     serial_printf(COM1, "Testing serial: %d\n", 101);
-}
-
-inline static void test_exceptions()
-{
-    vga_printf("\nTesting Exceptions\n\n");
-
-    int c = 1 / 0;
-    vga_printf("Returned from exception\n");
 }
 
 inline static void test_sycall()
@@ -108,22 +77,37 @@ inline static void test_keyboard()
     }
 }
 
-inline static void test_scheduler()
+static void test_scheduler()
 {
-    scheduler_addtask(root);
-    scheduler_addtask(task_01);
-    scheduler_addtask(task_02);
+    Program p1 = {
+        .data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20},
+        .len =   20,
+        .ip = 0
+    };
+    
+    Program p2 = {
+        .data = {10, 20, 30, 40},
+        .len =   4,
+        .ip = 0
+    };
+    
+    scheduler_addtask(p1);
+    scheduler_addtask(p2);
+    
+    scheduler_start();
 }
 
 void kernel_main()
 {
-    // test_serial();
-    // test_exceptions();
-    // test_sycall();
-    // test_cpu();
-    // test_alloc();
-    // test_keyboard();
     test_scheduler();
+    
+//     test_serial();
+//     test_sycall();
+//     test_cpu();
+//     test_alloc();
+//     test_keyboard();
+//     test_scheduler();
+//     scheduler_start();
 }
 
 void _start()
