@@ -1,6 +1,5 @@
 # FlowOs
 --------
-OS inspired by microservice architecture of web
 
 # Tools
 
