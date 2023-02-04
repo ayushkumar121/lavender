@@ -1,4 +1,4 @@
-# FlowOs
+# Hobby operating system
 --------
 
 # Tools
