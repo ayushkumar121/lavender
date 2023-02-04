@@ -2,7 +2,7 @@
 
 #include <lib/types.h>
 
-#define ARRSIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+#define ARRAY_LENGTH(arr) (sizeof(arr) / sizeof(arr[0]))
 
 void strrev(char *str);
 size_t strlen(const char *str);

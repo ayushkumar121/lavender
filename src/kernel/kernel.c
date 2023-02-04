@@ -9,6 +9,7 @@
 
 #include <sys/heap.h>
 #include <sys/syscalls.h>
+#include <sys/program.h>
 #include <sys/scheduler.h>
 
 #include <lib/utils.h>
@@ -16,12 +17,6 @@
 inline static void test_serial()
 {
     serial_printf(COM1, "Testing serial: %d\n", 101);
-}
-
-inline static void test_sycall()
-{
-    syscall(SYSCALL_01);
-    syscall(SYSCALL_02);
 }
 
 inline static void test_cpu()
@@ -79,30 +74,63 @@ inline static void test_keyboard()
 
 static void test_scheduler()
 {
+    size_t program_data_1[] = {
+        PROGRAM_START,
+        PROGRAM_LOAD_IMMEDIATE, REGISTER_A, 0,
+        PROGRAM_LOAD_IMMEDIATE, REGISTER_D, 5,
+        
+        PROGRAM_LOAD_MEMORY_BASE, REGISTER_B,
+
+        // 9
+        PROGRAM_DEREF, REGISTER_C, REGISTER_B,
+        PROGRAM_SYSCALL, SYSCALL_PUTCHAR, REGISTER_C,
+        
+        PROGRAM_TEST, REGISTER_A, REGISTER_D,
+        PROGRAM_JUMP_IF, 28,
+        PROGRAM_INC, REGISTER_A, 1,
+        PROGRAM_INC, REGISTER_B, 8,
+
+        PROGRAM_JUMP, 9,
+
+        // 28
+        PROGRAM_NOOP,
+        PROGRAM_END,
+        'H','e','l','l','o','\n',
+    };
+    
     Program p1 = {
-        .data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20},
-        .len =   20,
-        .ip = 0
+        .program_data=program_data_1,
+        .program_capacity=ARRAY_LENGTH(program_data_1),
+    };
+    program_init(&p1);
+    
+    size_t program_data_2[] = {
+        PROGRAM_START,
+        PROGRAM_LOAD_IMMEDIATE, REGISTER_A, 1,
+        PROGRAM_LOAD_IMMEDIATE, REGISTER_B, 2,
+        
+        PROGRAM_ADD, REGISTER_A, REGISTER_B,
+        PROGRAM_PRINT, REGISTER_A,
+        
+        PROGRAM_END,
     };
     
     Program p2 = {
-        .data = {10, 20, 30, 40},
-        .len =   4,
-        .ip = 0
+        .program_data=program_data_2,
+        .program_capacity=ARRAY_LENGTH(program_data_2),
     };
+    program_init(&p2);
     
-    scheduler_addtask(p1);
-    scheduler_addtask(p2);
+    scheduler_addtask(&p1);
+    scheduler_addtask(&p2);
     
     scheduler_start();
 }
 
 void kernel_main()
 {
-    test_scheduler();
-    
+    test_scheduler();    
 //     test_serial();
-//     test_sycall();
 //     test_cpu();
 //     test_alloc();
 //     test_keyboard();
@@ -113,15 +141,15 @@ void kernel_main()
 void _start()
 {
     serial_init(COM1);
-    interrupts_init();
-    // Load drivers that adds their own interrupt handler
-    {
-        pic_init();
-        keyboard_init();
-        scheduler_init();
-    }
-    interrupts_load();
+    
     alloc_init();
-
+    interrupts_init();
+    
+    // Load drivers that adds their own interrupt handler
+    pic_init();
+    keyboard_init();
+    scheduler_init();
+    
+    interrupts_load();
     kernel_main();
 }

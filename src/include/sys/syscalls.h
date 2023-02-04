@@ -1,12 +1,16 @@
 #pragma once
+#include <lib/types.h>
 
-#define MAX_SYSCALLS 2
+enum Syscalls 
+{
+  // Puts data into stdout
+  SYSCALL_PUTCHAR = 0,
+  
+  // Wait fors a key press and returns it
+  SYSCALL_GETKEY,
 
-#define SYSCALL_01 0
-#define SYSCALL_02 1
+  // Total count of all the syscalls
+  SYSCALL_COUNT
+};
 
-void syscall(int syscall_index);
-
-void handle_syscall(int syscall_index);
-void syscall_test01(void);
-void syscall_test02(void);
+size_t syscall(size_t syscall_index, size_t argument);

@@ -3,37 +3,30 @@
 #include <gfx/vga.h>
 #include <gfx/vga_colors.h>
 
-void syscall(int syscall_index)
+typedef size_t (*SyscallHandler)(size_t);
+
+static size_t syscall_putchar(size_t data)
 {
-    __asm__ volatile("mov eax, %0" ::"a"(syscall_index));
-    __asm__ volatile("int 0x80");
+    vga_putchar(data);
+    return 0;
 }
 
-typedef void (*Syscall)();
-
-void handle_syscall(int syscall_index)
+static size_t syscall_getkey(size_t data)
 {
-    static Syscall syscalls[] = {
-        syscall_test01,
-        syscall_test02,
-    };
+    return 0;
+}
 
-    if (syscall_index < MAX_SYSCALLS)
+static SyscallHandler syscalls[SYSCALL_COUNT] = 
+{
+   [SYSCALL_PUTCHAR] = syscall_putchar,
+   [SYSCALL_GETKEY] = syscall_getkey,
+};
+
+size_t syscall(size_t syscall_index, size_t argument)
+{
+    if (syscall_index < SYSCALL_COUNT)
     {
-        syscalls[syscall_index]();
+        return syscalls[syscall_index](argument);
     }
-}
-
-void syscall_test01(void)
-{
-    vga_setcolor(VGA_COLOR_CYAN);
-    vga_printf("[SYSCALL] Syscall 1 called\n");
-    vga_restore_color();
-}
-
-void syscall_test02(void)
-{
-    vga_setcolor(VGA_COLOR_CYAN);
-    vga_printf("[SYSCALL] Syscall 2 called\n");
-    vga_restore_color();
+    return 0;
 }

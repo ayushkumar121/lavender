@@ -11,38 +11,28 @@
 #define SCHEDULER_INT_INDEX 0x81
 typedef struct
 {
-    int current_pid;
+    int64_t current_pid;
     uint32_t mutex_lock;
 } ProcessState;
 
-
-static Program processes[256];
-static int pid_count = 0;
+static Program *processes[256];
+static size_t pid_count = 0;
 
 static ProcessState state = {
    .current_pid = -1,
    .mutex_lock = MUTEX_UNLOCKED,
 };
 
-void dirty_sleep()
-{
-    for(int i=0; i<16680000;i++) 
-    {
-        __asm("nop;");
-    }
-}
 __attribute__((interrupt)) static void tick_handler(InterruptFrame *frame)
 {
     if(pid_count > 0)
     {
         state.current_pid++;
-        
         if (state.current_pid >= pid_count) 
         {
             state.current_pid= 0;
         } 
     } 
-    
     pic_eoi(TIMER_INT_INDEX);
 }
 
@@ -51,12 +41,12 @@ void scheduler_init()
     interrupts_add_handler(TIMER_INT_INDEX, tick_handler, INT_GATE);
 }
 
-int scheduler_addtask(Program program)
+void scheduler_addtask(Program *program)
 {
-    processes[pid_count++] = program;
-    return pid_count;
+    int64_t pid = pid_count++;
+    program->pid = pid;
+    processes[pid] = program;
 }
-
 
 void scheduler_start()
 {
@@ -65,20 +55,10 @@ void scheduler_start()
         spin_lock(&state.mutex_lock);
         if (state.current_pid > -1)
         {
-            // we're locking on state so we don't interrupt don't update
-            // current pid mid running
-            Program *p = &processes[state.current_pid];
-        
-            // We can run program
-            if (p->ip < p->len)
-            {
-                vga_printf("Running process: %d\n", state.current_pid);
-                p->ip++;
-            }
-            
+            Program *p = processes[state.current_pid];
+            program_step(p);
         }
-        
-        dirty_sleep();
+        // vga_printf(".");
         spin_unlock(&state.mutex_lock);
     }
 }

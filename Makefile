@@ -1,11 +1,12 @@
 PNAME=flowos
+ARCH=x86
 IDIR=src/include
 SDIR=src
 ODIR=bin
 CC=gcc
 
-DIRS=$(ODIR) $(ODIR)/x86 $(ODIR)/kernel $(ODIR)/kernel \
-	$(ODIR)/arch/x86/dev $(ODIR)/arch/x86/gfx $(ODIR)/arch/x86/lib $(ODIR)/arch/x86/sys
+DIRS=$(ODIR) $(ODIR)/$(ARCH) $(ODIR)/kernel $(ODIR)/kernel \
+	$(ODIR)/arch/$(ARCH)/dev $(ODIR)/arch/$(ARCH)/gfx $(ODIR)/arch/$(ARCH)/lib $(ODIR)/arch/$(ARCH)/sys
 
 
 DEPS   := $(shell find $(IDIR) -name "*.h")
@@ -21,15 +22,15 @@ $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 
 build: $(OBJ)
 	nasm -f elf64 $(SDIR)/kernel/kernel_entry.asm -o $(ODIR)/kernel/kernel_entry.o
-	ld  -o $(ODIR)/x86/full_kernel.bin -Ttext 0x1000 $(ODIR)/kernel/kernel_entry.o $(OBJ) --oformat binary 
+	ld  -o $(ODIR)/$(ARCH)/full_kernel.bin -Ttext 0x1000 $(ODIR)/kernel/kernel_entry.o $(OBJ) --oformat binary 
 
-	nasm -f bin $(SDIR)/boot/boot.asm -o $(ODIR)/x86/boot.bin
-	nasm -f bin $(SDIR)/boot/padding.asm -o $(ODIR)/x86/padding.bin
-	cat  $(ODIR)/x86/boot.bin $(ODIR)/x86/full_kernel.bin $(ODIR)/x86/padding.bin > $(ODIR)/x86/$(PNAME).bin
+	nasm -f bin $(SDIR)/boot/boot.asm -o $(ODIR)/$(ARCH)/boot.bin
+	nasm -f bin $(SDIR)/boot/padding.asm -o $(ODIR)/$(ARCH)/padding.bin
+	cat  $(ODIR)/$(ARCH)/boot.bin $(ODIR)/$(ARCH)/full_kernel.bin $(ODIR)/$(ARCH)/padding.bin > $(ODIR)/$(ARCH)/$(PNAME).bin
 
 clean:
 	rm -rdf bin
 
 run:
-	qemu-system-x86_64 -drive file=$(ODIR)/x86/$(PNAME).bin,format=raw \
+	qemu-system-x86_64 -drive file=$(ODIR)/$(ARCH)/$(PNAME).bin,format=raw \
 	-serial stdio -vga std -display sdl

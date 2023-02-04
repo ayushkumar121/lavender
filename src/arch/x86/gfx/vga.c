@@ -66,28 +66,6 @@ static void vga_newline()
     writer.col = 0;
 }
 
-static void vga_putchar(char ch)
-{
-    if (ch != '\n')
-    {
-        writer.buffer->chars[writer.row][writer.col].ascii_character = ch;
-        writer.buffer->chars[writer.row][writer.col].color_code = writer.color;
-
-        if (writer.col < VGA_COLS)
-        {
-            writer.col++;
-        }
-        else
-        {
-            vga_newline();
-        }
-    }
-    else
-    {
-        vga_newline();
-    }
-}
-
 static void vga_puts(char *str)
 {
     while (*str)
@@ -115,6 +93,29 @@ void vga_restore_color()
     writer.previous_color = temp;
     spin_unlock(&writer.mutex_lock);
 }
+
+void vga_putchar(char ch)
+{
+    if (ch != '\n')
+    {
+        writer.buffer->chars[writer.row][writer.col].ascii_character = ch;
+        writer.buffer->chars[writer.row][writer.col].color_code = writer.color;
+
+        if (writer.col < VGA_COLS)
+        {
+            writer.col++;
+        }
+        else
+        {
+            vga_newline();
+        }
+    }
+    else
+    {
+        vga_newline();
+    }
+}
+
 
 void vga_printf(const char *fmt, ...)
 {

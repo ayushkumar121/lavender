@@ -66,14 +66,6 @@ __attribute__((interrupt)) static void page_fault_handler(InterruptFrame *frame,
     __asm__("hlt");
 }
 
-// Syscalls
-__attribute__((interrupt)) void syscall_handler(InterruptFrame *frame)
-{
-    register int syscall_index __asm__("eax");
-    handle_syscall(syscall_index);
-    frame->ip++;
-}
-
 void interrupts_init()
 {
     for (size_t i = 0; i < 256; ++i)
@@ -90,7 +82,6 @@ void interrupts_init()
 
     interrupts_add_handler(IRQ_DIVIDE_BY_ZERO, divide_by_zero_handler, TRAP_GATE);
     interrupts_add_handler(IRQ_PAGE_FAULT, page_fault_handler, TRAP_GATE);
-    interrupts_add_handler(IRQ_SYSCALL, syscall_handler, INT_GATE_USER);
 }
 
 void interrupts_load()
