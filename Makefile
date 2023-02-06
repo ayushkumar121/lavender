@@ -1,4 +1,4 @@
-PNAME=flowos
+PNAME=lavender
 ARCH=x86
 IDIR=src/include
 SDIR=src
@@ -26,11 +26,15 @@ build: $(OBJ)
 
 	nasm -f bin $(SDIR)/boot/boot.asm -o $(ODIR)/$(ARCH)/boot.bin
 	nasm -f bin $(SDIR)/boot/padding.asm -o $(ODIR)/$(ARCH)/padding.bin
-	cat  $(ODIR)/$(ARCH)/boot.bin $(ODIR)/$(ARCH)/full_kernel.bin $(ODIR)/$(ARCH)/padding.bin > $(ODIR)/$(ARCH)/$(PNAME).bin
+	cat  $(ODIR)/$(ARCH)/boot.bin $(ODIR)/$(ARCH)/full_kernel.bin $(ODIR)/$(ARCH)/padding.bin \
+	> $(ODIR)/$(ARCH)/$(PNAME).bin
+
+	# dd if=/dev/zero of=$(ODIR)/$(ARCH)/$(PNAME).bin bs=512 count=2880 >/dev/null
+	# dd if=$(ODIR)/$(ARCH)/osimage.bin of=$(ODIR)/$(ARCH)/$(PNAME).bin conv=notrunc >/dev/null
 
 clean:
 	rm -rdf bin
 
 run:
-	qemu-system-x86_64 -drive file=$(ODIR)/$(ARCH)/$(PNAME).bin,format=raw \
-	-serial stdio -vga std -display sdl
+	qemu-system-x86_64 -drive file=$(ODIR)/$(ARCH)/$(PNAME).bin,format=raw,index=0,if=floppy, \
+	-serial stdio -vga std -display sdl -m 128M

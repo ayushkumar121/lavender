@@ -3,6 +3,8 @@
 #include <gfx/vga.h>
 #include <gfx/vga_colors.h>
 
+#include <dev/keyboard.h>
+
 typedef size_t (*SyscallHandler)(size_t);
 
 static size_t syscall_putchar(size_t data)
@@ -13,7 +15,8 @@ static size_t syscall_putchar(size_t data)
 
 static size_t syscall_getkey(size_t data)
 {
-    return 0;
+    char ch = keyboard_getch(KEY_EVENT_PRESSED);
+    return ch;
 }
 
 static SyscallHandler syscalls[SYSCALL_COUNT] = 

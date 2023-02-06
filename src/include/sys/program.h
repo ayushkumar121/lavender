@@ -51,6 +51,10 @@ enum Instructions
   // sets zero flag if REGISTER_A == REGISTER_B
   PROGRAM_TEST,
 
+  // usage [PROGRAM_TEST, REGISTER_A, VALUE]
+  // sets zero flag if REGISTER_A == VALUR
+  PROGRAM_TEST_IMMEDIATE,
+
   // resets flags
   PROGRAM_RESET,
 

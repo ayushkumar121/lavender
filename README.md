@@ -9,9 +9,6 @@
 
 # References
 - https://wiki.osdev.org/
-
-- Design
-    - https://os.phil-opp.com/
-
-- Paging
-    - https://intermezzos.github.io/book/first-edition/paging.html 
+- https://www.bencode.net/blob/nasmcheatsheet.pdf
+- https://os.phil-opp.com/
+- https://intermezzos.github.io/book/first-edition/paging.html 

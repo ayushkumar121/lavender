@@ -10,7 +10,7 @@
 
 void dirty_sleep()
 {
-    for(int i=0; i<17000000;i++) 
+    for(int i=0; i<1000000;i++) 
     {
         __asm("nop;");
     }
@@ -116,6 +116,18 @@ void program_step(Program *program)
           program->flags &= ~ZERO_FLAG;
       }
       break;
+
+      case PROGRAM_TEST_IMMEDIATE:
+      {
+        size_t reg0 = pop_instruction(program);
+        int64_t value = pop_instruction(program);
+
+        if (program->registers[reg0] == value)
+          program->flags |= ZERO_FLAG;
+        else
+          program->flags &= ~ZERO_FLAG;
+      }
+      break;
       
       case PROGRAM_RESET:
       {
@@ -156,11 +168,7 @@ void program_step(Program *program)
       break;
     
       case PROGRAM_END: 
-      {
-        vga_setcolor(VGA_COLOR_CYAN);
-        vga_printf("\n%d>> %d\n", program->pid, program->registers[REGISTER_RESULT]);
-        vga_restore_color();
-      }
+      {}
       break;
   }
   
