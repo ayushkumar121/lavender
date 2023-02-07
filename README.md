@@ -6,6 +6,7 @@
 - i386 elf gcc
 - Nasm
 - Qemu
+- GNU Make
 
 # References
 - https://wiki.osdev.org/
