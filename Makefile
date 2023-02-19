@@ -37,4 +37,4 @@ clean:
 
 run:
 	qemu-system-x86_64 -drive file=$(ODIR)/$(ARCH)/$(PNAME).bin,format=raw,index=0,if=floppy, \
-	-serial stdio -vga std -display sdl -m 128M
+	 -m 128M

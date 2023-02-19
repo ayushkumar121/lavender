@@ -8,13 +8,22 @@
 
 #include <lib/utils.h>
 
-void dirty_sleep()
+void dirty_sleep_1()
 {
-    for(int i=0; i<1000000;i++) 
+    for(int i=0; i<500000;i++) 
     {
         __asm("nop;");
     }
 }
+
+void dirty_sleep_2()
+{
+    for(int i=0; i<16000000;i++) 
+    {
+        __asm("nop;");
+    }
+}
+
 
 void program_init(Program *program)
 {
@@ -101,7 +110,27 @@ void program_step(Program *program)
       {
         size_t id = pop_instruction(program);
         size_t data = pop_instruction(program);
-        program->registers[REGISTER_RESULT]=syscall(id, data);   
+	program->registers[REGISTER_RESULT]=syscall(id, data);
+      }
+      break;
+      
+      case PROGRAM_PING: 
+      {
+	vga_setcolor(VGA_COLOR_GREEN);
+	vga_printf("Ping\n");
+        vga_restore_color();
+
+	dirty_sleep_2();
+      }
+      break;
+      
+      case PROGRAM_PONG: 
+      {
+	vga_setcolor(VGA_COLOR_RED);
+	vga_printf("Pong\n");
+        vga_restore_color();
+
+	dirty_sleep_2();
       }
       break;
 
@@ -171,6 +200,6 @@ void program_step(Program *program)
       {}
       break;
   }
-  
-  dirty_sleep();
+
+  dirty_sleep_1();
 }        

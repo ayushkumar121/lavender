@@ -75,6 +75,11 @@ enum Instructions
   // the value in A
   PROGRAM_DEREF,
 
+  // These functions print "ping" and "pong"
+  // Used for multitasking testing
+  PROGRAM_PING,
+  PROGRAM_PONG,
+
   // Marks the end of your program as well base base of 
   // of fixed memory base
   PROGRAM_END
