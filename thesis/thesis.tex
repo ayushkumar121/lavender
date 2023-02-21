@@ -29,7 +29,7 @@ communication model at kernel level}
 	\chapter*{Certificate}
 	
 	This is to certify that 
-	\textbf{Ayush Kumar Shakya} (Roll no. 190108017),
+    \textbf{Ayush Kumar Shakya} (Roll no. 190108017),
 	\textbf{Arunima Verma} (Roll no. 190108014),
 	\textbf{Ashutosh Singh} (Roll no. 190108015),
 	\textbf{Hemant Singh} (Roll no. 190108024),
@@ -78,8 +78,18 @@ communication model at kernel level}
 	if it is created as small microservices that utilise effective IPC mechanisms.
 	
 	\section{Why publisher-subscriber pattern ?}
-	
-	\textbf{TODO:}
+    Publish/Subscribe messaging is an asynchronous service-to-service communi-
+    cation method used in serverless and microservices architectures. Publishers
+    and subscribers are decoupled from one another so that publishers do not
+    know the destination of the information that they send, and subscribers do
+    not know the source of the information that they receive.
+
+    It has following benefits
+	\begin{enumerate}
+		\item Decoupled/Loosely systems
+		\item Real\-time communication
+		\item Ease of development
+	\end{enumerate}
 	
 	\section{IPC Model}
 	\begin{enumerate}
@@ -90,7 +100,7 @@ communication model at kernel level}
 	
 	\section{Publishing}
 	Any process may send any number of messages on a particular \textbf{topic} or 
-	multiple topics, topics may be represented by an inteager.
+	multiple topics, topics may be represented by an integer.
 
 	some of the topics may be reserved for system use so programs listening to those
 	topics can be sure that no malicious program can messages on reserved topics.
@@ -102,7 +112,7 @@ communication model at kernel level}
 	function to be called when they receive a notification.
 	kernel may store these processes in a hash table where \textit{key} is topic 
 	and \textit{value} is a linked list or process identifiers or PIDs.
-	This registration maybe implemnted as a syscall.c
+	This registration maybe implemented as a syscall.c
 		
 	\section{Notification}
 	When a notification arrives on a particular topic, it is added to a queue,
@@ -112,6 +122,41 @@ communication model at kernel level}
 	We opted for copying for messages rather than shared memory because
 	modern CPUs are quite good at copying small data and having a copy rather than
 	shared resourse will help prevent any concurrency related issues such as deadlocks.	
+
+    \section{Sharing information}
+    \subsection{Shared memory}
+    Inter process communication by shared memory is a concept where two or
+    more process can access the common memory and communication is done
+    through this shared memory where changes made by one process can be
+    viewed by another process.
+
+    For applications that exchange large amounts of data, shared memory is
+    far superior to message passing techniques like message queues, which require
+    system calls for every data exchange.
+
+    To use shared memory, we have to perform two basic step
+    \begin{enumerate}
+		\item Request a memory segment that can be shared between processes to the operating system.		
+        \item associate a part of that memory or the whole memory with the address space of the calling process.
+	\end{enumerate}
+    
+    \subsection{Message Passing}
+    Message passing can be used as a more process-oriented approach to synchronization 
+    than the ”data-oriented” approaches used in providing mutual
+    exclusion for shared resources.
+
+    Message passing model allows multiple processes to read and write data
+    to the message queue without being connected to each other. Messages are
+    stored on the queue until their recipient retrieves them. Message queues are
+    quite useful for interprocess communication and are used by most operating
+    systems.
+
+    We opted for message passing rather than shared memory because in
+    shared memory we have to coordinate a lot between processes which has an
+    overhead.
+
+    Furthermore modern processors are very good at copying and moving
+    small amount of data
 
 	\section{Cleanup}
 	When is process is no longer running it may be removed from the hash table
@@ -145,11 +190,9 @@ communication model at kernel level}
 	There proposals to add dbus like functionality at linux kernel level but nothing
 	concrete is merged yet\cite{citation03}.	
 	
-    \chapter{Progress Report}
-	
-	\section{Implementation}
-	
-	\subsection{Kernel}
+    \chapter{Implementation}
+		
+	\section{Kernel}
 	To reduce project scope and resource availability, 
 	we have developed a 64 bit x86 kernel written in C and will concentrate 
 	on optimising our ipc mechanisms for x86 platform only.
@@ -162,15 +205,49 @@ communication model at kernel level}
 	
 	In addition, the kernel configures the hardware timer, keyboard, and other configurations for CPU interrupts 
 	from hardware and software.
-	
-	\subsection{Process Managment and Scheduler}
+
+    \section{Bootloader}
+    \subsection{Loading Kernel}
+    In the x86 architecture, the bootup procedure looks for a bootloader on
+    the first sector of the booting device (a USB flash disk, hard drive, image
+    file, etc.). This is automatically loaded and executed during the system
+    booting process. The bootloader is responsible for loading the rest of the
+    OS from the booting device into memory. The bootloader cannot rely upon
+    any functionality from the OS, such as OS calls for disk I/O, or linking an
+    object file against static libraries. However, the x86 architecture requires the
+    presence of the Basic Input Output System (BIOS), which provides minimal
+    terminal, keyboard and disk support. Your bootloader will use these BIOS
+    calls to load the kernel from disk into memory, set up a stack space, and then
+    switch control to the kernel. At this point, the OS begins running.
+
+    \subsection{Memory Protection}
+    Segmentation provides a mechanism of isolating individual code, data, and   
+    stack modules so that multiple programs (or tasks) can run on the same processor 
+    without interfering with one another.
+
+    Whatever memory address you came across inside a process is actually a logical address. 
+    This logical address then converts into linear address using segmentation, then into physical
+    address(Address on RAM) using paging. Segmentation is a mechanism for
+    dividing the linear address space into smaller protected address spaces called
+    segments.
+
+    Paging is a different way of accessing physical memory. Instead of memory 
+    being divided into segments it is divided into pages and frames. 
+    
+    x86 processors normally use 3 or 4 level paging with most recent ones being able
+    to use even 5 level paging systems. Using paging allows us to create arbitrary
+    memory layouts and better utilize memory. It also allows us to implement
+    more complex scenarios where each process has its own address space.
+
+ 
+	\section{Process Managment and Scheduler}
 	We plan to introduce a process managment and round robin scheduler
 	to our kernel.
 	
 	In order to avoid linking-related activities, we have chosen to employ dummy programmes that 
 	our kernel would interpret.
 	
-	\subsection{Program}
+	\section{Program}
 	A program for our kernel will be a static list of instructions with a fix length
 	that will be interpeted instruction by instruction
 	
@@ -188,17 +265,15 @@ communication model at kernel level}
 	\subsection{Process management}
 	The state of the process manager is kept behind a mutex so we don't get into a situation
 	where our scheduler updates the state while we're executing our processes.
-	
+ 
 	\begin{verbatim}
 	typedef struct
 	{
 		int current_pid;
 		uint32_t mutex_lock;
 	} ProcessState;
-
 	static Program processes[256];
 	static int pid_count = 0;
-
 	static ProcessState state = {
    	    .current_pid = -1,
    	    .mutex_lock = MUTEX_UNLOCKED,
@@ -211,34 +286,218 @@ communication model at kernel level}
 	
 	A CPU timer interrupt will periodically give control back to the kernel from the
 	scheduler and we move to the next available task.
-	
-	\chapter{Work remaining}
-	
+
+    \section{Achieving multitasking}
+    Now we develop two functions \textit{scheduler\_addtask} to add a new task/thread
+    to schedule and manage another function \textit{scheduler\_start} that takes control from
+    the kernel and starts executing the available tasks registered through \textit{scheduler\_addtask}.
+
+    \begin{verbatim}
+    void scheduler_addtask(Program *program)
+    {
+        int64_t pid = pid_count++;
+        program->pid = pid;
+        processes[pid] = program;
+    }
+
+    void scheduler_start()
+    {
+        while(1) 
+        {
+            spin_lock(&state.mutex_lock);
+            if (state.current_pid > -1)
+            {
+                Program *p = processes[state.current_pid];
+                program_step(p);
+            }
+            spin_unlock(&state.mutex_lock);
+        }
+    }
+    \end{verbatim}
+    
+    \begin{verbatim}
+        
+    \end{verbatim}
+
+    \chapter{Digging Deeper into Threads}
+    Similar to JVM (Java virtual machine), we have implemented a virtual machine coupled with 
+    our scheduler that loads the programs and interprets a low level byte code designed to be 
+    platform independent and portable.
+
+    Byte code  can be compiled from a higher level language such as C/C++.
+
+    Initially byte code is loaded from disk into memory along with all its required static and 
+    dynamic data and the current state of the thread is initialized i.e. setting the instruction 
+    pointer to zero and assigning a process id.
+
+    Then with the help of a hardware timer, the scheduler chooses a thread to run next and 
+    mutex locks the current scheduler state till we execute one instruction in order to 
+    prevent hardware timer to not change process during the execution of an instruction 
+    i.e All instructions are atomic.
+
+    Then each instruction is then passed to virtual machine that interprets the relevant 
+    instructions and/or call system calls
+
+    \section{Program Instructions}
+    List of some instructions as expressed as C style enum
+    \begin{verbatim}
+    enum 
+    {
+    // Marks the start of your program
+    PROGRAM_START = 0,
+    
+    // Does nothing
+    PROGRAM_NOOP,
+    
+    // usage: [PROGRAM_LOAD_IMMEDIATE, REGISTER_A, 100]
+    // it load the data into register A
+    PROGRAM_LOAD_IMMEDIATE,
+
+    // usage: [PROGRAM_ADD REGISTER_A, REGISTER_B] 
+    // moves the data of register B into A
+    PROGRAM_MOV,
+  
+    // usage: [PROGRAM_ADD REGISTER_A, REGISTER_B] 
+    // it adds values in A and B together and stores them in A
+    PROGRAM_ADD,
+
+    // usage: [PROGRAM_INC REGISTER_A, amount] 
+    // increments the value stored in register by amount
+    PROGRAM_INC,
+
+    // usage [PROGRAM_PRINT REGISTER_A]
+    // it prints value A to screen
+    PROGRAM_PRINT, 
+
+    // usage [PROGRAM_SYSCALL, SYSCALL_ID, REGISTER_A]
+    // calls syscall with the given id and stores the result in
+    // REGISTER_RESULT
+    PROGRAM_SYSCALL,
+
+    // usage [PROGRAM_SYSCALL, SYSCALL_ID, SYSCALL_DATA]
+    // calls syscall with the given id and stores the result in
+    // REGISTER_RESULT
+    PROGRAM_SYSCALL_IMMEDIATE,
+
+    // usage [PROGRAM_TEST, REGISTER_A, REGISTER_B]
+    // sets zero flag if REGISTER_A == REGISTER_B
+    PROGRAM_TEST,
+
+    // usage [PROGRAM_TEST, REGISTER_A, VALUE]
+    // sets zero flag if REGISTER_A == VALUR
+    PROGRAM_TEST_IMMEDIATE,
+
+    // resets flags
+    PROGRAM_RESET,
+
+    // usage [PROGRAM_JUMP, ip]
+    // jumps to instruction
+    PROGRAM_JUMP,
+  
+    // usage [PROGRAM_JUMP_IF, ip]
+    // jumps to instruction zero flag is set
+    PROGRAM_JUMP_IF,
+
+    // usage [PROGRAM_MOV_MEMORY_START, REGISTER_A]
+    // load the memory base to register_a
+    PROGRAM_LOAD_MEMORY_BASE,
+
+    // usage [PROGRAM_DEREF, REGISTER_A, REGISTER_B]
+    // deref the memory address stored in b and stores
+    // the value in A
+    PROGRAM_DEREF,
+
+    // Marks the end of your program as well base base of 
+    // of fixed memory base
+    PROGRAM_END
+    }
+    \end{verbatim}
+
+    \pagebreak
+    
+    \section{Hello World example}
+    \begin{verbatim}
+        PROGRAM_START,
+        PROGRAM_LOAD_MEMORY_BASE, REGISTER_B,
+
+        // 3
+        PROGRAM_DEREF, REGISTER_C, REGISTER_B,
+        PROGRAM_SYSCALL, SYSCALL_PUTCHAR, REGISTER_C,
+        
+        PROGRAM_TEST_IMMEDIATE, REGISTER_C, 0,
+        PROGRAM_JUMP_IF, 19,
+        PROGRAM_INC, REGISTER_B, 8,
+
+        PROGRAM_JUMP, 3,
+
+        // 19
+        PROGRAM_NOOP,
+        PROGRAM_END,
+        'H','e','l','l','o',' ','W','o','r','l','d','\n',0,
+    \end{verbatim}
+
+    \chapter{Initial IPC implementation : Ping-Pong}
+    In our kernel, we have implemented two lightweight threads namely ping and pong 
+    which our scheduler manages.
+
+    Goal of ping program is to sent out messages which our kernel will sent out to all the subscribers (pong process).
+
+    Goal of the pong program on the other hand is to listen for the messages from the ping process and respond to them (by printing pong).
+
+    Using this these threads we’ll be implement a simple IPC mechanism that can be scaled for 1 or more processes.
+
+    \section{Output:}
+    \begin{verbatim}
+        Kernel is executing processes ....
+        Ping
+        Pong
+        Ping
+        Pong
+    \end{verbatim}
+
+ 
 	\pagebreak
 	\begin{thebibliography}{9}
 	\bibitem{citation01}
 		S. L. Mirtaheri, E. M. Khaneghah and M. Sharifi, 
-		''A Case for Kernel Level Implementation of Inter Process Communication Mechanisms,'' 
+		A Case for Kernel Level Implementation of Inter Process Communication Mechanisms,
 		2008 3rd International Conference on Information and Communication Technologies: From Theory to Applications, 
 		2008, pp. 1-7, doi: 10.1109/ICTTA.2008.4530360.
 	
 	\bibitem{citation02}
 		R. Rajkumar, M. Gagliardi and Lui Sha, 
-		''The real-time publisher/subscriber inter-process communication model for distributed real-time systems: design and implementation,'' 
+		The real-time publisher/subscriber inter-process communication model for distributed real-time systems: design and implementation, 
 		Proceedings Real-Time Technology and Applications Symposium, 
 		1995, pp. 66-75, doi: 10.1109/RTTAS.1995.516203. 
 
 	\bibitem{citation03}
 		David Herrmann
-		''Bus IPC'', https://lists.linuxfoundation.org/pipermail/ksummit-discuss/2016-July/003047.html
+		Bus IPC, https://lists.linuxfoundation.org/pipermail/ksummit-discuss/2016-July/003047.html
 		2016
 		
 	\bibitem{citation04}
 		Jochen Liedtke. 1993. 
-		''Improving IPC by kernel design. In Proceedings of the fourteenth ACM symposium on Operating systems principles (SOSP '93). 
-		Association for Computing Machinery'', 
+		Improving IPC by kernel design. In Proceedings of the fourteenth ACM symposium on Operating systems principles (SOSP '93). 
+		Association for Computing Machinery, 
 		New York, NY, USA, 175–188. 
 		https://doi.org/10.1145/168619.168633
+
+    \bibitem{citation05}
+        https://www.ijesi.org/papers/Vol(7)i5/Version-3/I0705035155.pdf
+
+    \bibitem{citation07}
+        https://www.researchgate.net/publication/232625032\_A\_Survey\_of
+        \_Virtual\_Machine\_System\_Current\_Technology\_and\_Future\_Trends
+
+    \bibitem{citation08}
+    https://www.researchgate.net/publication/353958262\_A\_RESEARCH\_SURVEY\_ON
+    \_VIRTUAL\_MACHINES\_FOR\_EFFICIENT\_COMPUTING\_IN\_OPERATING\_SYSTEMS
+
+    \bibitem{citation09}
+    https://iopscience.iop.org/article/10.1088/1742-6596/1950/1/012027/pdf
+ 
+    \bibitem{citation10}
+    https://compas.cs.stonybrook.edu/~nhonarmand/courses/fa14/cse506.2/papers/chen01.pdf
 
 	\end{thebibliography}
 	\addcontentsline{toc}{chapter}{Bibliography}
