@@ -17,7 +17,7 @@ inline static void test_scheduler()
 {
     size_t pong_program[100] = {
         PROGRAM_START,
-        PROGRAM_LOAD, REGISTER_A, 101,            // A=101
+        PROGRAM_LOAD, REGISTER_A, CHANNEL_0,       // A=CHANNEL_0
         PROGRAM_LOAD_MEMORY_BASE, REGISTER_B,     // B=&static_memory
         PROGRAM_SUBSCRIBE, REGISTER_A, REGISTER_B,
         
@@ -35,7 +35,7 @@ inline static void test_scheduler()
         PROGRAM_JUMP, 12,
 
         PROGRAM_END,
-        '#', '\n', 0,
+        0,
     };
    
     Program pong = {
@@ -47,7 +47,7 @@ inline static void test_scheduler()
  
     size_t ping_program[100] = {
         PROGRAM_START,
-        PROGRAM_LOAD, REGISTER_A, 101,  // A=101
+        PROGRAM_LOAD, REGISTER_A, CHANNEL_0,      // A=101
         PROGRAM_LOAD_MEMORY_BASE, REGISTER_B,     // B=&static_memory
 	      PROGRAM_PUBLISH, REGISTER_A, REGISTER_B,
 	      PROGRAM_END,

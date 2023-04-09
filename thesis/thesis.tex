@@ -436,24 +436,8 @@ communication model at kernel level}
         'H','e','l','l','o',' ','W','o','r','l','d','\n',0,
     \end{verbatim}
 
-    \chapter{Initial IPC implementation : Ping-Pong}
-    In our kernel, we have implemented two lightweight threads namely ping and pong 
-    which our scheduler manages.
-
-    Goal of ping program is to sent out messages which our kernel will sent out to all the subscribers (pong process).
-
-    Goal of the pong program on the other hand is to listen for the messages from the ping process and respond to them (by printing pong).
-
-    Using this these threads we’ll be implement a simple IPC mechanism that can be scaled for 1 or more processes.
-
-    \section{Output:}
-    \begin{verbatim}
-        Kernel is executing processes ....
-        Ping
-        Pong
-        Ping
-        Pong
-    \end{verbatim}
+    \chapter{Implementing Inter process communication}
+	TODO: @arunima @hemant
 
  
 	\pagebreak
