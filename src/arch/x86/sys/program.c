@@ -1,5 +1,6 @@
 #include <sys/program.h>
 
+#include <sys/heap.h>
 #include <sys/scheduler.h>
 #include <sys/syscalls.h>
 
@@ -8,22 +9,31 @@
 
 #include <lib/utils.h>
 
-void dirty_sleep_1()
+Subscriber *subscribers[CHANNEL_COUNT];
+
+void add_subscriber(size_t channel, size_t *packet, Program *program) 
 {
-    for(int i=0; i<500000;i++) 
+  Subscriber **node = &subscribers[channel];
+  while(*node != NULL)
+  {
+    node = &((*node)->next);
+  }
+  
+  Subscriber *new_subscriber = (Subscriber*)alloc(sizeof(Subscriber));
+  new_subscriber->packet=packet,
+  new_subscriber->program=program,
+  new_subscriber->next=NULL;
+
+  *node=new_subscriber;
+}
+
+void dirty_sleep()
+{
+    for(int i=0; i<1000000;i++) 
     {
         __asm("nop;");
     }
 }
-
-void dirty_sleep_2()
-{
-    for(int i=0; i<16000000;i++) 
-    {
-        __asm("nop;");
-    }
-}
-
 
 void program_init(Program *program)
 {
@@ -31,7 +41,7 @@ void program_init(Program *program)
   while(program->program_data[k] != PROGRAM_END &&
     k < MAX_PROGRAM_CAPACITY)
     k++;
-  program->program_length = k;
+  program->program_length=k+1;
   program->ip=0;
   program->flags=0;
 
@@ -47,14 +57,17 @@ size_t pop_instruction(Program *program)
 
 void program_step(Program *program)
 {
-  if (program->ip > program->program_length)
+  if (program->ip >= program->program_length)
     return;
 
-  
   size_t inst = pop_instruction(program);
   switch(inst)
   {
-      case PROGRAM_LOAD_IMMEDIATE:
+      case PROGRAM_START:
+      {}
+      break;
+    
+      case PROGRAM_LOAD:
       {
         size_t reg = pop_instruction(program);
         int64_t value  = pop_instruction(program);
@@ -92,7 +105,7 @@ void program_step(Program *program)
         int64_t data = program->registers[reg0];
 
         vga_setcolor(VGA_COLOR_CYAN);
-        vga_printf("\n%d<< %d\n", program->pid, data);
+        vga_printf("%d\n", data);
         vga_restore_color();
       }
       break;
@@ -100,9 +113,9 @@ void program_step(Program *program)
       case PROGRAM_SYSCALL: 
       {
         size_t id = pop_instruction(program);
-        size_t reg0 = pop_instruction(program);
-        char data = program->registers[reg0];
-        program->registers[REGISTER_RESULT]=syscall(id, data);   
+        size_t reg = pop_instruction(program);
+        char data = program->registers[reg];
+        program->registers[REGISTER_RESULT]=syscall(id, data);
       }
       break;
       
@@ -110,27 +123,36 @@ void program_step(Program *program)
       {
         size_t id = pop_instruction(program);
         size_t data = pop_instruction(program);
-	program->registers[REGISTER_RESULT]=syscall(id, data);
+        program->registers[REGISTER_RESULT]=syscall(id, data);
       }
       break;
       
-      case PROGRAM_PING: 
+      case PROGRAM_PUBLISH: 
       {
-	vga_setcolor(VGA_COLOR_GREEN);
-	vga_printf("Ping\n");
-        vga_restore_color();
+        size_t channel_reg = pop_instruction(program);
+        size_t packet_reg = pop_instruction(program);
+        
+        size_t channel = program->registers[channel_reg];
+        size_t *packet = (size_t*)program->registers[packet_reg];
 
-	dirty_sleep_2();
+        Subscriber *subscriber = subscribers[channel];
+        while (subscriber != NULL) 
+        {
+          memcpy(subscriber->packet, packet, PACKET_SIZE);
+          subscriber = subscriber->next;
+        }
       }
       break;
       
-      case PROGRAM_PONG: 
+      case PROGRAM_SUBSCRIBE: 
       {
-	vga_setcolor(VGA_COLOR_RED);
-	vga_printf("Pong\n");
-        vga_restore_color();
+        size_t channel_reg = pop_instruction(program);
+        size_t packet_reg = pop_instruction(program);
 
-	dirty_sleep_2();
+        size_t channel = program->registers[channel_reg];
+        size_t *packet = (size_t*)program->registers[packet_reg];
+  
+        add_subscriber(channel, packet, program);
       }
       break;
 
@@ -172,16 +194,17 @@ void program_step(Program *program)
       
       case PROGRAM_JUMP_IF:
       { 
+        size_t loc = pop_instruction(program);        
         if (program->flags & ZERO_FLAG)
-          program->ip = pop_instruction(program);
+          program->ip = loc;
       }
       break;
 
       case PROGRAM_LOAD_MEMORY_BASE:
       {
-        size_t reg0 = pop_instruction(program);
-        program->registers[reg0] = 
-          (size_t)&(program->program_data[program->program_length+1]);
+        size_t reg = pop_instruction(program);
+        size_t addr = (size_t)&(program->program_data[program->program_length]);
+        program->registers[reg] = addr;
       }
       break;
       
@@ -201,5 +224,5 @@ void program_step(Program *program)
       break;
   }
 
-  dirty_sleep_1();
+  dirty_sleep();
 }        

@@ -15,42 +15,52 @@
 
 inline static void test_scheduler()
 {
-    size_t ping_program[] = {
+    size_t pong_program[100] = {
         PROGRAM_START,
-    	
-	PROGRAM_PING,
+        PROGRAM_LOAD, REGISTER_A, 101,            // A=101
+        PROGRAM_LOAD_MEMORY_BASE, REGISTER_B,     // B=&static_memory
+        PROGRAM_SUBSCRIBE, REGISTER_A, REGISTER_B,
+        
+        PROGRAM_NOOP, // Infinite Loop start,
 
-	// Infinite Loop
-	PROGRAM_JUMP, 0,
+        // Printing the received value
+        PROGRAM_LOAD_MEMORY_BASE, REGISTER_B,     // B=&static_memory
+        
+        PROGRAM_DEREF, REGISTER_C, REGISTER_B,   // C=*B
+        PROGRAM_TEST_IMMEDIATE, REGISTER_C, 0,   // flag=(C==0)
+        PROGRAM_JUMP_IF, 9,                      // jump 9th inst if flag is set
 
-	PROGRAM_END, 
+        PROGRAM_SYSCALL, SYSCALL_PUTCHAR, REGISTER_C,
+        PROGRAM_INC, REGISTER_B, 8,
+        PROGRAM_JUMP, 12,
+
+        PROGRAM_END,
+        '#', '\n', 0,
     };
-    
+   
+    Program pong = {
+        .program_data=pong_program,
+        .program_capacity=ARRAY_LENGTH(pong_program),
+    };
+    program_init(&pong);
+    scheduler_addtask(&pong);
+ 
+    size_t ping_program[100] = {
+        PROGRAM_START,
+        PROGRAM_LOAD, REGISTER_A, 101,  // A=101
+        PROGRAM_LOAD_MEMORY_BASE, REGISTER_B,     // B=&static_memory
+	      PROGRAM_PUBLISH, REGISTER_A, REGISTER_B,
+	      PROGRAM_END,
+        'H', 'e', 'l', 'l', 'o', '\n', 0,
+    };
+
     Program ping = {
         .program_data=ping_program,
         .program_capacity=ARRAY_LENGTH(ping_program),
     };
     program_init(&ping);
     scheduler_addtask(&ping);
-    
-    size_t pong_program[] = {
-	PROGRAM_START,
-        
-	PROGRAM_PONG,
-	
-	// Infinite Loop
-	PROGRAM_JUMP, 0,
 
-	PROGRAM_END,
-    };
-   
-    Program pong = {
-        .program_data=pong_program,
-        .program_capacity=100,
-    };
-    program_init(&pong);
-    scheduler_addtask(&pong);
-    
     scheduler_start();
 }
 
@@ -65,15 +75,11 @@ void kernel_main()
 void _start()
 {
     serial_init(COM1);
-    
     alloc_init();
     interrupts_init();
-    
-    // Load drivers that adds their own interrupt handler
     pic_init();
     keyboard_init();
     scheduler_init();
-    
     interrupts_load();
     kernel_main();
 }

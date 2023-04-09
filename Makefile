@@ -35,6 +35,6 @@ build: $(OBJ)
 clean:
 	rm -rdf bin
 
-run:
+run: build
 	qemu-system-x86_64 -drive file=$(ODIR)/$(ARCH)/$(PNAME).bin,format=raw,index=0,if=floppy, \
 	 -m 128M

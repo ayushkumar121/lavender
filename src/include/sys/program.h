@@ -1,13 +1,24 @@
 #pragma once
 #include <lib/types.h>
 
-#define REGISTER_A 0
-#define REGISTER_B 1
-#define REGISTER_C 2
-#define REGISTER_D 3
-#define REGISTER_RESULT 4
+enum Registers
+{
+  REGISTER_A,
+  REGISTER_B,
+  REGISTER_C,
+  REGISTER_D,
+  REGISTER_RESULT,
+  REGISTER_COUNT,
+};
 
-#define REGISTER_COUNT 5
+enum Channels
+{
+  CHANNEL_0,
+  CHANNEL_1,
+  CHANNEL_2,
+  CHANNEL_3,
+  CHANNEL_COUNT,
+};
 
 enum Instructions 
 {
@@ -17,9 +28,9 @@ enum Instructions
   // Does nothing
   PROGRAM_NOOP,
 
-  // usage: [PROGRAM_LOAD_IMMEDIATE, REGISTER_A, 100]
+  // usage: [PROGRAM_LOAD, REGISTER_A, 100]
   // it load the data into register A
-  PROGRAM_LOAD_IMMEDIATE,
+  PROGRAM_LOAD,
 
   // usage: [PROGRAM_ADD REGISTER_A, REGISTER_B] 
   // moves the data of register B into A
@@ -66,7 +77,7 @@ enum Instructions
   // jumps to instruction zero flag is set
   PROGRAM_JUMP_IF,
 
-  // usage [PROGRAM_MOV_MEMORY_START, REGISTER_A]
+  // usage [PROGRAM_LOAD_MEMORY_BASE, REGISTER_A]
   // load the memory base to register_a
   PROGRAM_LOAD_MEMORY_BASE,
 
@@ -75,11 +86,9 @@ enum Instructions
   // the value in A
   PROGRAM_DEREF,
 
-  // These functions print "ping" and "pong"
-  // Used for multitasking testing
-  PROGRAM_PING,
-  PROGRAM_PONG,
-
+  PROGRAM_PUBLISH,
+  PROGRAM_SUBSCRIBE,
+  
   // Marks the end of your program as well base base of 
   // of fixed memory base
   PROGRAM_END
@@ -102,11 +111,15 @@ typedef struct Program {
     int64_t pid;
     size_t ip;
     char flags;
-
-    // points to static buffer
-    // char *static_buffer;
-    // size_t static_buffer_size;
 } Program;
+
+#define PACKET_SIZE 64
+
+typedef struct Subscriber {
+  size_t *packet; 
+  Program *program;
+  struct Subscriber *next;
+} Subscriber;
 
 void program_init(Program *program);
 void program_step(Program *program);
