@@ -1,6 +1,8 @@
 \documentclass[12pt]{report}
 \usepackage{graphicx}
+\usepackage{tikz}
 \graphicspath{ {images/} }
+\pagenumbering{Roman}
 
 \title{
 {Implementation of publihser / subscriber inter process 
@@ -25,26 +27,8 @@ communication model at kernel level}
 
 \begin{document}
 	\maketitle 
-	
-	\chapter*{Certificate}
-	
-	This is to certify that 
-    \textbf{Ayush Kumar Shakya} (Roll no. 190108017),
-	\textbf{Arunima Verma} (Roll no. 190108014),
-	\textbf{Ashutosh Singh} (Roll no. 190108015),
-	\textbf{Hemant Singh} (Roll no. 190108024),
-	students of INFORMATION TECHNOLOGY, Harcourt Butler Technical University, 
-	Kanpur are working on their project under my guidance.
-	They have a desire for learning and I wish success in their future project work.
-	
-	\vfill
-	\textit{Project guided by}
-	\newline
-	\textbf{Dr. Prabhat Verma}
-	
-	\addcontentsline{toc}{chapter}{Certificate}
-
-	\chapter*{Abstract}
+    
+    \chapter*{Abstract}
 	
 	Inter process communication (IPC) protocols must be provided by multitasking systems 
 	in order to allow communication between processes with varying levels of privilege. 
@@ -61,8 +45,40 @@ communication model at kernel level}
 	We believe that each of those problems can be resolved by a kernel level 
 	publisher subscriber model.
 
+	\chapter*{Certificate}
 	
-	\addcontentsline{toc}{chapter}{Abstract}
+	This is to certify that 
+    \textbf{Ayush Kumar Shakya} (Roll no. 190108017),
+	\textbf{Arunima Verma} (Roll no. 190108014),
+	\textbf{Ashutosh Singh} (Roll no. 190108015),
+	\textbf{Hemant Singh} (Roll no. 190108024),
+	students of INFORMATION TECHNOLOGY, Harcourt Butler Technical University, 
+	Kanpur are working on their project under my guidance.
+	They have a desire for learning and I wish success in their future project work.
+	
+	\vfill
+	\textit{Project guided by}
+	\newline
+	\textbf{Dr. Prabhat Verma}
+ 
+	\chapter*{Acknowledgment}
+    TODO:
+    
+	\chapter*{List of Figures}
+    TODO:
+    
+    \chapter*{List of Tables}
+    TODO:
+    
+    \chapter*{List of Abbreviations and Symbols Used}
+    TODO:
+       
+    \addcontentsline{toc}{chapter}{Abstract}
+	\addcontentsline{toc}{chapter}{Certificate}	
+	\addcontentsline{toc}{chapter}{Acknowledgment}	
+	\addcontentsline{toc}{chapter}{List of Figures}	
+	\addcontentsline{toc}{chapter}{List of Tables}	
+	\addcontentsline{toc}{chapter}{List of Abbreviations and Symbols Used}	
 	\tableofcontents
 	
 
@@ -97,6 +113,8 @@ communication model at kernel level}
 		\item Subscription
 		\item Notification
 	\end{enumerate}
+
+    % TODO : Add a simple figure explaining the working of pub sub mechanism
 	
 	\section{Publishing}
 	Any process may send any number of messages on a particular \textbf{topic} or 
@@ -163,7 +181,7 @@ communication model at kernel level}
 	so if the same process identifer is assigned to some different process it 
 	doesn't receive messages it did not subscribe to.
     
-	\chapter{Related Work}
+	\chapter{Literature Review}
 	\section{Apache Kafka}
 	Apacha Kafka is distributed event broker that provides publisher-subscriber 
 	IPC mechanism at large distributed scale.It more or less achives the functionality 
@@ -190,7 +208,10 @@ communication model at kernel level}
 	There proposals to add dbus like functionality at linux kernel level but nothing
 	concrete is merged yet\cite{citation03}.	
 	
-    \chapter{Implementation}
+    \chapter{Methodology}
+    TODO:
+    
+    \chapter{Design Details}
 		
 	\section{Kernel}
 	To reduce project scope and resource availability, 
@@ -320,8 +341,7 @@ communication model at kernel level}
     \end{verbatim}
 
     \chapter{Digging Deeper into Threads}
-    Similar to JVM (Java virtual machine), we have implemented a virtual machine coupled with 
-    our scheduler that loads the programs and interprets a low level byte code designed to be 
+    We have implemented a virtual machine coupled with our scheduler that loads the programs and interprets a low level byte code designed to be 
     platform independent and portable.
 
     Byte code  can be compiled from a higher level language such as C/C++.
@@ -338,6 +358,12 @@ communication model at kernel level}
     Then each instruction is then passed to virtual machine that interprets the relevant 
     instructions and/or call system calls
 
+
+    % TODO : Add figure of hierarchy of code similar to this
+    % Hardware -> Os -> Virtual Machine -> Threads
+    
+    \pagebreak
+    
     \section{Program Instructions}
     List of some instructions as expressed as C style enum
     \begin{verbatim}
@@ -436,10 +462,105 @@ communication model at kernel level}
         'H','e','l','l','o',' ','W','o','r','l','d','\n',0,
     \end{verbatim}
 
-    \chapter{Implementing Inter process communication}
-	TODO: @arunima @hemant
+    \chapter{Initial IPC implementation : Ping-Pong}
+    In our kernel, we have implemented two lightweight threads namely ping and pong 
+    which our scheduler manages.
 
- 
+    Goal of ping program is to sent out messages which our kernel will sent out to all the subscribers (pong process).
+
+    Goal of the pong program on the other hand is to listen for the messages from the ping process and respond to them (by printing pong).
+
+    Using this these threads we’ll be implement a simple IPC mechanism that can be scaled for 1 or more processes.
+
+    \section{Output:}
+    \begin{verbatim}
+        Kernel is executing processes ....
+        Ping
+        Pong
+        Ping
+        Pong
+    \end{verbatim}
+
+    \pagebreak
+    \chapter{Implementing Publish Subscriber Model}
+    In our project, we have implemented the publisher-subscriber model with the help of two programs,
+    each performing a specific task. The first program, which is acting as a subscriber,
+    is designed to subscribe to a specific channel. It does this by loading the memory address of the channel 
+    into a designated register and then loading the memory address of the static memory, which is used to store received messages.  
+    The program then uses the PROGRAM\_SUBSCRIBE command to subscribe to the channel using the two previously loaded register values. 
+    Once subscribed, the program enters an infinite loop to wait for messages. 
+    When a message is received, the program retrieves it from the static memory and prints it to the console using the SYSCALL\_PUTCHAR
+    command. This is done by loading the memory address of the static memory into a designated register and then using the PROGRAM\_DEREF
+    command to retrieve the value stored at that memory address. If the value is not equal to zero, indicating the end of the message,
+    the program prints the character to the console and increments the memory address by 8 to retrieve the next character. 
+    This process continues until the end of the message is reached. 
+
+	\pagebreak
+    \section{Program 1:}
+    \begin{verbatim}
+        size_t pong_program[100] = { 
+        PROGRAM_START, 
+        PROGRAM_LOAD, REGISTER_A, CHANNEL_0,
+        PROGRAM_LOAD_MEMORY_BASE, REGISTER_B, 
+        PROGRAM_SUBSCRIBE, REGISTER_A, REGISTER_B, 
+        PROGRAM_NOOP,
+
+        PROGRAM_LOAD_MEMORY_BASE, REGISTER_B, 
+
+        PROGRAM_DEREF, REGISTER_C, REGISTER_B, 
+
+        PROGRAM_TEST_IMMEDIATE, REGISTER_C, 0, 
+        PROGRAM_JUMP_IF, 9,                     
+        PROGRAM_SYSCALL, SYSCALL_PUTCHAR, REGISTER_C, 
+        PROGRAM_INC, REGISTER_B, 8, 
+        PROGRAM_JUMP, 12, 
+        PROGRAM_END, 
+        'O', 'l', 'd',0, 
+    }; 
+    \end{verbatim}
+
+    % TODO: Add Figure for subscription data structure (vo linked list wala)
+
+    The second program, which is acting as a publisher, is designed to publish a message to a specific channel.
+    It does this by loading the memory address of the channel into a designated register and then loading the memory address
+    of the static memory, which is used to store the message. The program then uses the PROGRAM\_PUBLISH command to publish 
+    the message to the channel using the two previously loaded register values. 
+
+    In this particular case, the message being published is "Hello", followed by a newline character and a null terminator. 
+
+    \pagebreak
+    \section{Program 2:}
+    \begin{verbatim}
+        size_t ping_program[100] = { 
+            PROGRAM_START, 
+            PROGRAM_LOAD, REGISTER_A, CHANNEL_0,
+            PROGRAM_LOAD_MEMORY_BASE, REGISTER_B,     
+            PROGRAM_PUBLISH, REGISTER_A, REGISTER_B, 
+            PROGRAM_END, 
+        'H', 'e', 'l', 'l', 'o', '\n', 0, 
+    }; 
+    \end{verbatim}
+
+    By implementing these two programs using the publisher-subscriber model, we are able to create a simple but effective communication 
+    system between different programs or components within our project. This model allows us to decouple the different components, 
+    making it easier to maintain and update them individually without affecting the rest of the system. Additionally, 
+    it allows for a more flexible and scalable architecture,as new components can be added or removed without affecting the rest of the system. 
+
+    \chapter{Result}
+    Output from program:
+    \begin{verbatim}
+    Old
+    Hello
+    Hello
+    ...
+    \end{verbatim}
+    
+    As you can see as the second program starts to send the data to the channel our receiver program starts to the print the new data received from the sender.
+
+    \chapter{Conclusion}
+    TODO:
+
+
 	\pagebreak
 	\begin{thebibliography}{9}
 	\bibitem{citation01}
