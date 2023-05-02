@@ -62,16 +62,12 @@ communication model at kernel level}
 	\textbf{Dr. Prabhat Verma}
  
 	\chapter*{Acknowledgment}
-    TODO:
+    I would like to express my gratitude and appreciation to all who gave me the possibility complete this project.
+
+    Also, I take this opportunity to express my deep sense of gratitude to my Project Mentor, Mr. Prabhat Verma 
+    under whose valuable guidance, this project work has been carried out.
     
-	\chapter*{List of Figures}
-    TODO:
-    
-    \chapter*{List of Tables}
-    TODO:
-    
-    \chapter*{List of Abbreviations and Symbols Used}
-    TODO:
+    \listoffigures
        
     \addcontentsline{toc}{chapter}{Abstract}
 	\addcontentsline{toc}{chapter}{Certificate}	
@@ -114,19 +110,25 @@ communication model at kernel level}
 		\item Notification
 	\end{enumerate}
 
-    % TODO : Add a simple figure explaining the working of pub sub mechanism
-	
+    \begin{figure}
+    \begin{center}
+    \includegraphics[width=15cm]{images/pub-sub.png}
+    \end{center}
+    \caption{Pub-Sub Model}
+    \label{fig:fig1}
+    \end{figure}
+
 	\section{Publishing}
 	Any process may send any number of messages on a particular \textbf{topic} or 
-	multiple topics, topics may be represented by an integer.
+	multiple channels, channels may be represented by an integer.
 
-	some of the topics may be reserved for system use so programs listening to those
-	topics can be sure that no malicious program can messages on reserved topics.
+	some of the channels may be reserved for system use so programs listening to those
+	channels can be sure that no malicious program can messages on reserved channels.
 	
 	This may be implemented as a syscall at kernel level.
 				 	
 	\section{Subscription}
-	Processes can subscribe to one or more than one topics and register a callback
+	Processes can subscribe to one or more than one channels and register a callback
 	function to be called when they receive a notification.
 	kernel may store these processes in a hash table where \textit{key} is topic 
 	and \textit{value} is a linked list or process identifiers or PIDs.
@@ -209,10 +211,7 @@ communication model at kernel level}
 	concrete is merged yet\cite{citation03}.	
 	
     \chapter{Methodology}
-    TODO:
-    
-    \chapter{Design Details}
-		
+
 	\section{Kernel}
 	To reduce project scope and resource availability, 
 	we have developed a 64 bit x86 kernel written in C and will concentrate 
@@ -359,9 +358,15 @@ communication model at kernel level}
     instructions and/or call system calls
 
 
-    % TODO : Add figure of hierarchy of code similar to this
-    % Hardware -> Os -> Virtual Machine -> Threads
-    
+    \begin{figure}
+    \begin{center}
+    \includegraphics{images/hierarchy.png}
+    \end{center}
+    \caption{Hierarchy of processes}
+    \label{fig:fig2}
+    \end{figure}
+
+
     \pagebreak
     
     \section{Program Instructions}
@@ -519,7 +524,14 @@ communication model at kernel level}
     }; 
     \end{verbatim}
 
-    % TODO: Add Figure for subscription data structure (vo linked list wala)
+    \begin{figure}
+    \begin{center}
+    \includegraphics[width=12cm]{images/data-arch.png}
+    \end{center}
+    \caption{Subscription data structure}
+    \label{fig:fig3}
+    \end{figure}
+
 
     The second program, which is acting as a publisher, is designed to publish a message to a specific channel.
     It does this by loading the memory address of the channel into a designated register and then loading the memory address
@@ -558,7 +570,29 @@ communication model at kernel level}
     As you can see as the second program starts to send the data to the channel our receiver program starts to the print the new data received from the sender.
 
     \chapter{Conclusion}
-    TODO:
+    The proposed design outlines the implementation of a publisher/subscriber model for inter-process communication (IPC) at the kernel level. The publisher/subscriber pattern is 
+    a loosely coupled messaging method that allows for real-time communication and ease of development. The proposed design consists of three main steps: publishing, subscription, and 
+    notification.
+
+    In publishing, any process can send any number of messages on a particular channel or multiple channels. Channels can be represented by an integer, and some may be reserved 
+    for system use. The kernel level implementation of this can be achieved through a system call.
+
+    In subscription, processes can subscribe to one or more channels and register a callback function to be called when they receive a notification. The kernel can 
+    store these processes in a hash table where the key is the topic, and the value is a linked list of process identifiers or PIDs. This registration can also be 
+    implemented as a system call.
+
+    In notification, when a notification arrives on a particular topic, it is added to a queue, and the kernel dequeues channels one at a time and sends a 
+    copy of the message to each process. The proposed design opted for copying messages rather than using shared memory to prevent any concurrency-related issues, 
+    such as deadlocks.
+
+    To avoid linking-related activities, the proposed design employs dummy programs that the kernel interprets. The process management and round-robin scheduler are 
+    also introduced to the kernel, which allows for multitasking. The scheduler runs in an infinite loop and moves the instruction pointer for the current task to the 
+    next instruction, waiting for a certain amount of time to ensure that all processes get an equal amount of execution time. A CPU timer interrupt periodically gives 
+    control back to the kernel from the scheduler, and the next available task is executed.
+
+    Overall, the proposed design aims to reduce overheads and improve security by implementing IPC at the kernel level. The publisher/subscriber model provides loosely 
+    coupled messaging, real-time communication, and ease of development. The introduction of a process management and round-robin scheduler also allows for multitasking.
+
 
 
 	\pagebreak
